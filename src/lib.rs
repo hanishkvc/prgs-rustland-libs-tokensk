@@ -6,42 +6,16 @@
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
-pub struct TString<'a, 'b> {
-    theStr: String,
+pub struct TStr<'a> {
+    theStr: &'a str,
     spacePrefixs: isize,
     spaceSuffixs: isize,
-    aStr: &'a str,
-    bStr: &'b str,
 }
 
-impl<'a, 'b> TString<'a, 'b> {
-
-    pub fn from_string(thestr: String, astr: &'a str, bstr: &'b str) -> TString<'a, 'b> {
-        TString {
-            theStr: thestr,
-            spacePrefixs: -1,
-            spaceSuffixs: -1,
-            aStr: astr,
-            bStr: bstr,
-        }
-    }
-
-    /*
-    pub fn from_string_limited(thestr: String) -> TString<'a> {
-        TString { theStr: thestr.to_string(), spacePrefixs: -1, spaceSuffixs: -1, aStr: &thestr }
-    }
-    */
+impl<'a> TStr<'a> {
 
     pub fn the_str(&self) -> &str {
         &self.theStr
-    }
-
-    pub fn the_astr(&self) -> &str {
-        self.aStr
-    }
-
-    pub fn the_bstr(&self) -> &str {
-        self.bStr
     }
 
     pub fn space_prefixs_raw(&self) -> isize {
@@ -57,7 +31,7 @@ impl<'a, 'b> TString<'a, 'b> {
         let nstr = self.theStr.trim_start();
         let nlen = nstr.len();
         self.spacePrefixs = (olen - nlen) as isize;
-        self.theStr = nstr.trim().to_string();
+        self.theStr = nstr.trim();
         self.spaceSuffixs = (nlen - self.theStr.len()) as isize;
     }
 
@@ -79,22 +53,24 @@ impl<'a, 'b> TString<'a, 'b> {
 
 }
 
-/*
-impl<'a> FromStr for TString<'a> {
-    type Err = String;
+impl<'a> TStr<'a> {
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(TString::from_string_limited(s.to_string()))
+    pub fn from_str(s: &'a str) -> TStr<'a> {
+        TStr {
+            theStr: s,
+            spacePrefixs: -1,
+            spaceSuffixs: -1,
+        }
     }
-}
-*/
 
-impl<'a, 'b> TString<'a, 'b> {
+}
+
+impl<'a> TStr<'a> {
 
     pub fn nexttok(&self) -> &str {
         return &self.theStr[0..2];
     }
-    
+
 }
 
 
@@ -104,9 +80,9 @@ mod tests {
 
     #[test]
     fn test_create() {
-        let mut str1 = TString { theStr: "A direct string string".to_string(), spacePrefixs: 0, spaceSuffixs: 0, aStr: "test", bStr: "me" };
-        let mut str2 = TString::from_string("  A string 21string ".to_string(), "hello", "world");
-        let mut str3 = TString::from_string(" A str 12string  ".to_string(), "save", "nature");
+        let mut str1 = TStr { theStr: "A direct string string", spacePrefixs: 0, spaceSuffixs: 0 };
+        let mut str2 = TStr::from_str("  A string 21string ");
+        let mut str3 = TStr::from_str(" A str 12string  ");
         print!("Created TStrings: {:?}, {:?}, {:?}\n", str1, str2, str3);
         print!("Str1: {}, {}\n", str1.space_prefixs(), str1.space_suffixs());
         print!("Str2: {}, {}\n", str2.space_prefixs(), str2.space_suffixs());
