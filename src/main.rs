@@ -4,6 +4,7 @@
 //!
 
 use tokensk as toks;
+use toks::TStr;
 
 fn test_create() {
     //let mut str2 = toks::TStr::from_str(&"  A string 21string ".to_string());
@@ -28,7 +29,20 @@ fn test_create_raw() {
     print!("Str3:{}:p{},s{}\n", str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
 }
 
+fn test_nexttoken() {
+    let testlines = vec![ "what now", "   hello wold ", "  123 hello    0x123", "  test( \"hello  world\", 123, what(0x123))" ];
+    for line in testlines {
+        let mut tline = TStr::from_str(line);
+        print!("Test:NextTok:Line:[{}]\n", line);
+        while tline.remaining_len() > 0 {
+            let gottok = tline.nexttok().unwrap();
+            print!("\t[{}]\n", gottok);
+        }
+    }
+}
+
 fn main() {
     test_create();
     test_create_raw();
+    test_nexttoken();
 }

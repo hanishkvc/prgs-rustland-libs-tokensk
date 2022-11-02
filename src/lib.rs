@@ -152,6 +152,10 @@ impl<'a> TStr<'a> {
         return Ok(tok);
     }
 
+    pub fn remaining_len(&self) -> usize {
+        self.theStr.len()
+    }
+
 }
 
 
