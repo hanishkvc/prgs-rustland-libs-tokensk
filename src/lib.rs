@@ -28,6 +28,14 @@ impl TString {
         &self.theStr
     }
 
+    pub fn space_prefixs_raw(&self) -> isize {
+        self.spacePrefixs
+    }
+
+    pub fn space_suffixs_raw(&self) -> isize {
+        self.spaceSuffixs
+    }
+
     pub fn trim(&mut self) {
         let olen = self.theStr.len();
         let nstr = self.theStr.trim_start();
