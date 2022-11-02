@@ -31,12 +31,20 @@ fn test_create_raw() {
 }
 
 fn test_nexttoken() {
-    let testlines = vec![ "what now", "   hello wold ", "  123 hello    0x123", "  test( \"hello  world\", 123, what(0x123))", "\" lests check brackets within string what(yes, notnow,) \"" ];
+    let testlines = vec![
+        "what now",
+        "   hello wold ",
+        "  123 hello    0x123",
+        "  test( \"hello  world\", 123, what(0x123))",
+        "\" lests check brackets within string what(yes, notnow,) \"",
+        "\" lests check brackets within string what(yes, notnow,) ending quote missing",
+        "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
+        ];
     for line in testlines {
         let mut tline = TStr::from_str(line);
         print!("Test:NextTok:Line:[{}]\n", line);
         while tline.remaining_len() > 0 {
-            let gottok = tline.nexttok().unwrap();
+            let gottok = tline.nexttok(true).unwrap();
             print!("\t[{}]\n", gottok);
         }
     }

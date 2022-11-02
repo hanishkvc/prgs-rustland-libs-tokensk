@@ -67,7 +67,7 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
-    pub fn nexttok(&mut self) -> Result<String, String> {
+    pub fn nexttok(&mut self, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
         let mut cend = ' ';
         let mut bbegin = true;
@@ -86,7 +86,9 @@ impl<'a> TStr<'a> {
             }
             if ch == ' ' {
                 if bbegin {
-                    tok.push(ch);
+                    if !btrim {
+                        tok.push(ch);
+                    }
                     continue;
                 }
                 if cend != ' ' {
