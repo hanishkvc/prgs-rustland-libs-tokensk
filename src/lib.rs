@@ -26,6 +26,11 @@ impl<'a> TStr<'a> {
         self.spaceSuffixs
     }
 
+    ///
+    /// THis trims any space at begin or end of the line/string maintained internally.
+    /// It also updates the number of spaces that was found at the begin and end of the string,
+    /// when trimming it.
+    ///
     pub fn trim(&mut self) {
         let olen = self.theStr.len();
         let nstr = self.theStr.trim_start();
@@ -35,6 +40,8 @@ impl<'a> TStr<'a> {
         self.spaceSuffixs = (nlen - self.theStr.len()) as isize;
     }
 
+    /// Returns the number of spaces if any at the beginning of the string,
+    /// If trim has not been called before, it will be automatically called.
     pub fn space_prefixs(&mut self) -> usize {
         if self.spacePrefixs == -1 {
             self.trim();
@@ -43,6 +50,8 @@ impl<'a> TStr<'a> {
         return self.spacePrefixs as usize;
     }
 
+    /// Returns the number of spaces if any at the end of the string,
+    /// If trim has not been called before, it will be automatically called.
     pub fn space_suffixs(&mut self) -> usize {
         if self.spaceSuffixs == -1 {
             self.trim();
@@ -67,6 +76,14 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
+    ///
+    /// Get the next token from the current string
+    /// Normally space is used to delim tokens.
+    /// However
+    /// * double quoted string is treated as a single token
+    /// * () bracketed content is treated as a single token
+    ///   * one can have brackets within brackets.
+    ///
     pub fn nexttok(&mut self, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
         let mut cend = ' ';
@@ -154,6 +171,9 @@ impl<'a> TStr<'a> {
         return Ok(tok);
     }
 
+    ///
+    /// Return remaining text in the current line, which is not yet tokenised/extracted
+    ///
     pub fn remaining_len(&self) -> usize {
         self.theStr.len()
     }
