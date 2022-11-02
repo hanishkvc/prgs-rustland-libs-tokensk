@@ -67,23 +67,29 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
-    pub fn nexttok(&mut self) -> String {
+    pub fn nexttok(&mut self) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
+        let mut cend = ' ';
         let mut bbegin = true;
-        let mut bspaces = false;
         let mut bescape = false;
-        let mut bcheckstart = true;
+        let mut bcheckstart;
         let mut tok = String::new();
         let mut chpos= 0;
         let mut ch;
+        let mut bracketcnt = 0;
         for i in 0..vchars.len() {
             (chpos, ch) = vchars[i];
+            if bescape {
+                tok.push(ch);
+                bescape = false;
+                continue;
+            }
             if ch == ' ' {
                 if bbegin {
                     tok.push(ch);
                     continue;
                 }
-                if bspaces {
+                if cend != ' ' {
                     tok.push(ch);
                     continue;
                 }
@@ -96,16 +102,46 @@ impl<'a> TStr<'a> {
                 bcheckstart = false;
             }
             if ch == '"' {
+                if cend == ch {
+                    break;
+                }
                 if bcheckstart {
-                    bspaces = true;
+                    cend = ch;
                     continue;
                 }
-                if bescape {
-                    tok.push(ch);
-                    continue;
-                }
-                break;
             }
+            if ch == '\\' {
+                if bcheckstart {
+                    return Err(format!("Tok:NextTok:EscChar at start"));
+                }
+                bescape = true;
+                continue;
+            }
+            if ch == '(' {
+                if bcheckstart {
+                    return Err(format!("Tok:NextTok:( at start"));
+                }
+                if cend == ' ' {
+                    cend = ')';
+                }
+                bracketcnt += 1;
+                tok.push(ch);
+                continue;
+            }
+            if ch == ')' {
+                if bcheckstart {
+                    return Err(format!("Tok:NextTok:( at start"));
+                }
+                tok.push(ch);
+                if cend == ')' {
+                    bracketcnt -= 1;
+                    if bracketcnt <= 0 {
+                        break;
+                    }
+                }
+                continue;
+            }
+            tok.push(ch);
         }
         chpos += 1;
         if chpos >= self.theStr.len() {
@@ -113,7 +149,7 @@ impl<'a> TStr<'a> {
         } else {
             self.theStr = &self.theStr[chpos..];
         }
-        return tok;
+        return Ok(tok);
     }
 
 }
