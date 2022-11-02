@@ -16,6 +16,20 @@ fn test_create() {
     print!("Str3: {}, {}\n", str3.space_prefixs(), str3.space_suffixs());
 }
 
+fn test_print_su(instr: &str, inusize: usize) {
+    print!("{}, {}", instr, inusize);
+    //std::io::stdout().write_fmt("{}, {}", instr, inusize);
+}
+
+fn test_print_iu(inisize: isize, inusize: usize) {
+    print!("{}, {}", inisize, inusize);
+}
+
+fn test_print_uu(inusize1: usize, inusize2: usize) {
+    print!("{}, {}", inusize1, inusize2);
+}
+
+
 fn test_create_raw() {
     let mut str2 = toks::TString::from_string("  A string 21string ".to_string());
     let mut str3 = <toks::TString as std::str::FromStr>::from_str(" A str 12string  ").unwrap();
@@ -25,6 +39,15 @@ fn test_create_raw() {
     str3.trim();
     print!("Str2: {}, {}, {}\n", str2.the_str(), str2.space_prefixs_raw(), str2.space_suffixs_raw());
     print!("Str3: {}, {}, {}\n", str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
+    // the no go zone
+    test_print_su(str2.the_str(), str2.space_suffixs());
+    test_print_iu(str2.space_prefixs_raw(), str2.space_suffixs());
+    test_print_uu(str2.space_prefixs(), str2.space_suffixs());
+
+    print!("Str2: {}, {}\n", str2.the_str(), str2.space_suffixs());
+    print!("Str2: {}, {}\n", str2.space_suffixs(), str2.the_str());
+    print!("Str2: {}, {}\n", str2.space_prefixs_raw(), str2.space_suffixs());
+    print!("Str2: {}, {}\n", str2.space_prefixs(), str2.space_suffixs());
 }
 
 fn main() {
