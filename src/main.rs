@@ -45,8 +45,13 @@ fn test_nexttoken() {
         let mut tline = TStr::from_str(line);
         print!("INFO:Test:NextTok:Line:[{}]\n", line);
         while tline.remaining_len() > 0 {
-            let gottok = tline.nexttok(true).expect("ERRR:TestNextTok");
-            print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
+            let gottok = tline.nexttok(true);
+            if gottok.is_err() {
+                print!("ERRR:Test:NextTok:{}", gottok.unwrap_err());
+            } else {
+                let gottok = gottok.unwrap();
+                print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
+            }
         }
     }
 }

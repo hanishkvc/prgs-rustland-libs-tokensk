@@ -77,12 +77,30 @@ impl<'a> TStr<'a> {
 impl<'a> TStr<'a> {
 
     ///
+    /// drop text till and including specified LastTokPos
+    ///
+    pub fn drop_adjust(&mut self, mut lasttokpos: usize) {
+        lasttokpos += 1;
+        if lasttokpos >= self.theStr.len() {
+            self.theStr = &"";
+        } else {
+            self.theStr = &self.theStr[lasttokpos..];
+        }
+    }
+
+    ///
     /// Get the next token from the current string
     /// Normally space is used to delim tokens.
     /// However
     /// * double quoted string is treated as a single token
     /// * () bracketed content is treated as a single token
     ///   * one can have brackets within brackets.
+    ///
+    /// If any error identified while scanning for the token,
+    /// a error message is returned to the caller, while parallley
+    /// dropping the token with error, so that next call to this
+    /// will potentially retrieve a valid token, if any still
+    /// in the string/line.
     ///
     pub fn nexttok(&mut self, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
@@ -131,6 +149,7 @@ impl<'a> TStr<'a> {
             }
             if ch == '\\' {
                 if bcheckstart {
+                    self.drop_adjust(chpos);
                     return Err(format!("Tok:NextTok:EscChar at start"));
                 }
                 bescape = true;
@@ -138,6 +157,7 @@ impl<'a> TStr<'a> {
             }
             if ch == '(' {
                 if bcheckstart {
+                    self.drop_adjust(chpos);
                     return Err(format!("Tok:NextTok:( at start"));
                 }
                 if cend == ' ' {
@@ -149,6 +169,7 @@ impl<'a> TStr<'a> {
             }
             if ch == ')' {
                 if bcheckstart {
+                    self.drop_adjust(chpos);
                     return Err(format!("Tok:NextTok:) at start"));
                 }
                 tok.push(ch);
@@ -162,12 +183,7 @@ impl<'a> TStr<'a> {
             }
             tok.push(ch);
         }
-        chpos += 1;
-        if chpos >= self.theStr.len() {
-            self.theStr = &"";
-        } else {
-            self.theStr = &self.theStr[chpos..];
-        }
+        self.drop_adjust(chpos);
         return Ok(tok);
     }
 
