@@ -39,13 +39,14 @@ fn test_nexttoken() {
         "\" lests check brackets within string what(yes, notnow,) \"",
         "\" lests check brackets within string what(yes, notnow,) ending quote missing",
         "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
+        "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",
         ];
     for line in testlines {
         let mut tline = TStr::from_str(line);
-        print!("Test:NextTok:Line:[{}]\n", line);
+        print!("INFO:Test:NextTok:Line:[{}]\n", line);
         while tline.remaining_len() > 0 {
-            let gottok = tline.nexttok(true).unwrap();
-            print!("\t[{}]\n", gottok);
+            let gottok = tline.nexttok(true).expect("ERRR:TestNextTok");
+            print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
         }
     }
 }

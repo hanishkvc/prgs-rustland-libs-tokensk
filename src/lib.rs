@@ -149,7 +149,7 @@ impl<'a> TStr<'a> {
             }
             if ch == ')' {
                 if bcheckstart {
-                    return Err(format!("Tok:NextTok:( at start"));
+                    return Err(format!("Tok:NextTok:) at start"));
                 }
                 tok.push(ch);
                 if cend == ')' {
