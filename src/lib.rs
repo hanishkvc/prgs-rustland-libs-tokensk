@@ -82,10 +82,10 @@ mod tests {
         let mut str1 = TString { theStr: "A direct string string".to_string(), spacePrefixs: 0, spaceSuffixs: 0 };
         let mut str2 = TString::from_string("  A string 21string ".to_string());
         let mut str3 = TString::from_str(" A str 12string  ").unwrap();
-        print!("Created TStrings: {:?}, {:?}, {:?}", str1, str2, str3);
-        print!("Str1: {}, {}", str1.space_prefixs(), str1.space_suffixs());
-        print!("Str2: {}, {}", str2.space_prefixs(), str2.space_suffixs());
-        print!("Str3: {}, {}", str3.space_prefixs(), str3.space_suffixs());
+        print!("Created TStrings: {:?}, {:?}, {:?}\n", str1, str2, str3);
+        print!("Str1: {}, {}\n", str1.space_prefixs(), str1.space_suffixs());
+        print!("Str2: {}, {}\n", str2.space_prefixs(), str2.space_suffixs());
+        print!("Str3: {}, {}\n", str3.space_prefixs(), str3.space_suffixs());
     }
 
 }
