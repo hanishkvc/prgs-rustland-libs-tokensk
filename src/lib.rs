@@ -10,6 +10,7 @@ pub struct TStr<'a> {
     theStr: &'a str,
     spacePrefixs: isize,
     spaceSuffixs: isize,
+    bIncludeStringQuotes: bool,
 }
 
 impl<'a> TStr<'a> {
@@ -69,6 +70,7 @@ impl<'a> TStr<'a> {
             theStr: s,
             spacePrefixs: -1,
             spaceSuffixs: -1,
+            bIncludeStringQuotes: true,
         }
     }
 
@@ -139,6 +141,9 @@ impl<'a> TStr<'a> {
                 bcheckstart = false;
             }
             if ch == '"' {
+                if self.bIncludeStringQuotes {
+                    tok.push(ch);
+                }
                 if cend == ch {
                     break;
                 }
@@ -203,7 +208,7 @@ mod tests {
 
     #[test]
     fn test_create() {
-        let mut str1 = TStr { theStr: "A direct string string", spacePrefixs: 0, spaceSuffixs: 0 };
+        let mut str1 = TStr { theStr: "A direct string string", spacePrefixs: 0, spaceSuffixs: 0, bIncludeStringQuotes: true };
         let mut str2 = TStr::from_str("  A string 21string ");
         let mut str3 = TStr::from_str(" A str 12string  ");
         print!("Created TStrings: {:?}, {:?}, {:?}\n", str1, str2, str3);

@@ -47,7 +47,7 @@ fn test_nexttoken() {
         while tline.remaining_len() > 0 {
             let gottok = tline.nexttok(true);
             if gottok.is_err() {
-                print!("ERRR:Test:NextTok:{}", gottok.unwrap_err());
+                print!("ERRR:Test:NextTok:{}\n", gottok.unwrap_err());
             } else {
                 let gottok = gottok.unwrap();
                 print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
