@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
-struct TString {
+pub struct TString {
     theStr: String,
     spacePrefixs: isize,
     spaceSuffixs: isize,
@@ -22,6 +22,10 @@ impl TString {
             spacePrefixs: -1,
             spaceSuffixs: -1,
         }
+    }
+
+    pub fn the_str(&self) -> &str {
+        &self.theStr
     }
 
     pub fn trim(&mut self) {
