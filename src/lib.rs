@@ -71,6 +71,8 @@ impl<'a> TStr<'a> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
         let mut bbegin = true;
         let mut bspaces = false;
+        let mut bescape = false;
+        let mut bcheckstart = true;
         let mut tok = String::new();
         let mut chpos= 0;
         let mut ch;
@@ -87,7 +89,23 @@ impl<'a> TStr<'a> {
                 }
                 break;
             }
-            bbegin = false;
+            if bbegin {
+                bbegin = false;
+                bcheckstart = true;
+            } else {
+                bcheckstart = false;
+            }
+            if ch == '"' {
+                if bcheckstart {
+                    bspaces = true;
+                    continue;
+                }
+                if bescape {
+                    tok.push(ch);
+                    continue;
+                }
+                break;
+            }
         }
         chpos += 1;
         if chpos >= self.theStr.len() {
