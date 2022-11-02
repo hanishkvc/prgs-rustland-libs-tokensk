@@ -67,8 +67,35 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
-    pub fn nexttok(&self) -> &str {
-        return &self.theStr[0..2];
+    pub fn nexttok(&mut self) -> String {
+        let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
+        let mut bbegin = true;
+        let mut bspaces = false;
+        let mut tok = String::new();
+        let mut chpos= 0;
+        let mut ch;
+        for i in 0..vchars.len() {
+            (chpos, ch) = vchars[i];
+            if ch == ' ' {
+                if bbegin {
+                    tok.push(ch);
+                    continue;
+                }
+                if bspaces {
+                    tok.push(ch);
+                    continue;
+                }
+                break;
+            }
+            bbegin = false;
+        }
+        chpos += 1;
+        if chpos >= self.theStr.len() {
+            self.theStr = &"";
+        } else {
+            self.theStr = &self.theStr[chpos..];
+        }
+        return tok;
     }
 
 }
