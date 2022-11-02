@@ -3,14 +3,15 @@
 //! HanishKVC, 2022
 //!
 
-use tokensk as toks;
-use toks::TStr;
+
+use tokensk::TStr;
+
 
 fn test_create() {
-    //let mut str2 = toks::TStr::from_str(&"  A string 21string ".to_string());
+    //let mut str2 = TStr::from_str(&"  A string 21string ".to_string());
     let thestring = "  A string 21string ".to_string();
-    let mut str2 = toks::TStr::from_str(&thestring);
-    let mut str3 = toks::TStr::from_str(" A str 12string  ");
+    let mut str2 = TStr::from_str(&thestring);
+    let mut str3 = TStr::from_str(" A str 12string  ");
     print!("Created TStrings: {:?}, {:?}\n", str2, str3);
     //print!("Str2:{}:p{},s{}\n", str2.the_str(), str2.space_prefixs(), str2.space_suffixs());
     print!("Str2:p{},s{}:{}\n", str2.space_prefixs(), str2.space_suffixs(), str2.the_str());
@@ -19,8 +20,8 @@ fn test_create() {
 
 fn test_create_raw() {
     let thestring = "  A string 21string ".to_string();
-    let mut str2 = toks::TStr::from_str(&thestring);
-    let mut str3 = toks::TStr::from_str(" A str 12string  ");
+    let mut str2 = TStr::from_str(&thestring);
+    let mut str3 = TStr::from_str(" A str 12string  ");
     print!("Str2:{}:p{},s{}\n", str2.the_str(), str2.space_prefixs_raw(), str2.space_suffixs_raw());
     print!("Str3:{}:p{},s{}\n", str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
     str2.trim();
@@ -30,7 +31,7 @@ fn test_create_raw() {
 }
 
 fn test_nexttoken() {
-    let testlines = vec![ "what now", "   hello wold ", "  123 hello    0x123", "  test( \"hello  world\", 123, what(0x123))" ];
+    let testlines = vec![ "what now", "   hello wold ", "  123 hello    0x123", "  test( \"hello  world\", 123, what(0x123))", "\" lests check brackets within string what(yes, notnow,) \"" ];
     for line in testlines {
         let mut tline = TStr::from_str(line);
         print!("Test:NextTok:Line:[{}]\n", line);
