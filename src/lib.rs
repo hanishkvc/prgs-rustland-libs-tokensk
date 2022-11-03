@@ -292,10 +292,14 @@ impl<'a> TStr<'a> {
     /// * whether spaces at either end of the token is trimmed or not
     /// * whether to abort or continue on encountering errors when tokenising
     ///
-    pub fn tokens_vec(&mut self, btrim: bool, bcontinue_onerr: bool) -> Result<Vec<String>, String> {
+    /// User can specify a specific delimiter, which will be used to identify
+    /// the tokens. However additionally if a double quoted string or bracketed
+    /// block is found, it will be treated has a token on its own.
+    ///
+    pub fn tokens_vec(&mut self, dlimdef: char, btrim: bool, bcontinue_onerr: bool) -> Result<Vec<String>, String> {
         let mut vtoks = Vec::new();
         while self.remaining_len() > 0 {
-            let gottok = self.nexttok(btrim);
+            let gottok = self.nexttok(dlimdef, btrim);
             if gottok.is_err() && !bcontinue_onerr {
                 return Err(format!("TokensVec:{}", gottok.unwrap_err()));
             }
@@ -310,16 +314,19 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
-    pub fn split_once(&mut self, dlim: char) -> Result<(String, String), String> {
-        if dlim != ' ' {
-            todo!("TStr:SplitOnce:Currently [{}] not yet supported as a dlim", dlim);
-        }
-        let gottok = self.nexttok(true);
+    ///
+    /// Retrieve the 1st available token, and remaining string.
+    ///
+    /// User can specify a specific delimiter, which will be used provided its
+    /// valid, wrt the 1st token actually found. Else what ever valid 1st token
+    /// is found will be retrieved. Look at nexttok doc for info.
+    ///
+    pub fn split_once(&mut self, dlimdef: char) -> Result<(String, String), String> {
+        let gottok = self.nexttok(dlimdef, true);
         if gottok.is_err() {
             return Err(gottok.unwrap_err());
         }
         return Ok((gottok.unwrap(), self.the_str().to_string()));
-
     }
 
     pub fn char_first(&self) -> Option<char> {

@@ -68,7 +68,7 @@ pub fn test_nexttoken() {
         tline.set_str(line);
         print!("{}:Line:[{}]\n", mtag, line);
         while tline.remaining_len() > 0 {
-            let gottok = tline.nexttok(true);
+            let gottok = tline.nexttok(' ', true);
             if gottok.is_err() {
                 print!("ERRR:{}:{}\n", mtag, gottok.unwrap_err());
             } else {
@@ -78,7 +78,7 @@ pub fn test_nexttoken() {
         }
         // use set_str and tokens_vec to rescan into a vector
         tline.set_str(line);
-        let vtoks = tline.tokens_vec(true, true);
+        let vtoks = tline.tokens_vec(' ', true, true);
         if vtoks.is_err() {
             print!("ERRR:{}:FullSet:{}\n", mtag, vtoks.unwrap_err());
         } else {
