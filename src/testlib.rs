@@ -50,25 +50,15 @@ pub fn test_create_raw() {
 }
 
 
-pub fn test_nexttoken() {
+pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
     let mtag = format!("{}:TestNextToken", MTAG);
-    let testlines = vec![
-        "what now",
-        "   hello\n wold ",
-        "  123 hello\\n    0x123",
-        "  test( \"hello  world\", 123, what(0x123))",
-        "\" lests chec\tk brackets within string what(yes, notnow,) \"",
-        "\" lests check brackets within string what(yes, notnow,) ending quote missing",
-        "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
-        "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",
-        ];
     let mut tline = TStr::from_str("");
     tline.escseq_defaults();
     for line in testlines {
         tline.set_str(line);
         print!("{}:Line:[{}]\n", mtag, line);
         while tline.remaining_len() > 0 {
-            let gottok = tline.nexttok(' ', true);
+            let gottok = tline.nexttok(dlimdef, true);
             if gottok.is_err() {
                 print!("ERRR:{}:{}\n", mtag, gottok.unwrap_err());
             } else {
@@ -78,11 +68,32 @@ pub fn test_nexttoken() {
         }
         // use set_str and tokens_vec to rescan into a vector
         tline.set_str(line);
-        let vtoks = tline.tokens_vec(' ', true, true);
+        let vtoks = tline.tokens_vec(dlimdef, true, true);
         if vtoks.is_err() {
             print!("ERRR:{}:FullSet:{}\n", mtag, vtoks.unwrap_err());
         } else {
             print!("\tFullSet:{:?}\n", vtoks.unwrap());
         }
     }
+}
+
+pub fn test_nexttoken() {
+    let testlines = vec![
+        "what now",
+        "   hello\n wold ",
+        "  123 hello\\n    0x123",
+        "  test( \"hello  world\", 123, what(0x123))",
+        "\" lests chec\tk brackets within string what(yes, notnow,) \"",
+        "\" lests check brackets within string what(yes, notnow,) ending quote missing",
+        "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
+        "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",
+    ];
+    test_nexttoken_ex(testlines.clone(), ' ');
+    test_nexttoken_ex(testlines, ',');
+    let testlines = vec![
+        "line with spaces and, commas, yes, commas",
+        " test(what, now with space also), bit more text "
+    ];
+    test_nexttoken_ex(testlines.clone(), ' ');
+    test_nexttoken_ex(testlines.clone(), ',');
 }
