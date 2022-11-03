@@ -55,15 +55,17 @@ pub fn test_nexttoken() {
     let testlines = vec![
         "what now",
         "   hello\n wold ",
-        "  123 hello    0x123",
+        "  123 hello\\n    0x123",
         "  test( \"hello  world\", 123, what(0x123))",
         "\" lests chec\tk brackets within string what(yes, notnow,) \"",
         "\" lests check brackets within string what(yes, notnow,) ending quote missing",
         "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
         "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",
         ];
+    let mut tline = TStr::from_str("");
+    tline.escseq_defaults();
     for line in testlines {
-        let mut tline = TStr::from_str(line);
+        tline.set_str(line);
         print!("{}:Line:[{}]\n", mtag, line);
         while tline.remaining_len() > 0 {
             let gottok = tline.nexttok(true);
