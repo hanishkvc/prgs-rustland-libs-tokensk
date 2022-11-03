@@ -76,7 +76,7 @@ pub fn test_nexttoken() {
         }
         // use set_str and tokens_vec to rescan into a vector
         tline.set_str(line);
-        let vtoks = tline.tokens_vec(true);
+        let vtoks = tline.tokens_vec(true, true);
         if vtoks.is_err() {
             print!("ERRR:{}:FullSet:{}\n", mtag, vtoks.unwrap_err());
         } else {

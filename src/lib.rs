@@ -235,14 +235,22 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
-    pub fn tokens_vec(&mut self, btrim: bool) -> Result<Vec<String>, String> {
+    ///
+    /// Get a vector of all the tokens in the current string/line
+    /// One can control
+    /// * whether spaces at either end of the token is trimmed or not
+    /// * whether to abort or continue on encountering errors when tokenising
+    ///
+    pub fn tokens_vec(&mut self, btrim: bool, bcontinue_onerr: bool) -> Result<Vec<String>, String> {
         let mut vtoks = Vec::new();
         while self.remaining_len() > 0 {
             let gottok = self.nexttok(btrim);
-            if gottok.is_err() {
+            if gottok.is_err() && !bcontinue_onerr {
                 return Err(format!("TokensVec:{}", gottok.unwrap_err()));
             }
-            vtoks.push(gottok.unwrap());
+            if gottok.is_ok() {
+                vtoks.push(gottok.unwrap());
+            }
         }
         Ok(vtoks)
     }
