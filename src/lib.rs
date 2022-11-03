@@ -233,6 +233,22 @@ impl<'a> TStr<'a> {
 
 }
 
+impl<'a> TStr<'a> {
+
+    pub fn tokens_vec(&mut self, btrim: bool) -> Result<Vec<String>, String> {
+        let mut vtoks = Vec::new();
+        while self.remaining_len() > 0 {
+            let gottok = self.nexttok(btrim);
+            if gottok.is_err() {
+                return Err(format!("TokensVec:{}", gottok.unwrap_err()));
+            }
+            vtoks.push(gottok.unwrap());
+        }
+        Ok(vtoks)
+    }
+
+}
+
 pub mod testlib;
 
 #[cfg(test)]

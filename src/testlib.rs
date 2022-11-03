@@ -74,5 +74,13 @@ pub fn test_nexttoken() {
                 print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
             }
         }
+        // use set_str and tokens_vec to rescan into a vector
+        tline.set_str(line);
+        let vtoks = tline.tokens_vec(true);
+        if vtoks.is_err() {
+            print!("ERRR:{}:FullSet:{}\n", mtag, vtoks.unwrap_err());
+        } else {
+            print!("\tFullSet:{:?}\n", vtoks.unwrap());
+        }
     }
 }
