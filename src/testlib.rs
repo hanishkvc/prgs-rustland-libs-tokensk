@@ -52,6 +52,7 @@ pub fn test_create_raw() {
 
 pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
     let mtag = format!("{}:TestNextToken", MTAG);
+    print!("\n\n\n\n{}: **** Lets test nexttoken ****\n\n", mtag);
     let mut tline = TStr::from_str("");
     tline.escseq_defaults();
     for line in testlines {
@@ -91,8 +92,8 @@ pub fn test_nexttoken() {
     test_nexttoken_ex(testlines.clone(), ' ');
     test_nexttoken_ex(testlines, ',');
     let testlines = vec![
-        "line with spaces and, commas, yes, commas",
-        " test(what, now with space also), bit more text "
+        "line with spaces and, commas,yes,commas",
+        " test(what,now with space,also),bit more text "
     ];
     test_nexttoken_ex(testlines.clone(), ' ');
     test_nexttoken_ex(testlines.clone(), ',');
