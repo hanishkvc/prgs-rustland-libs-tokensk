@@ -10,10 +10,16 @@ pub struct TStr<'a> {
     theStr: &'a str,
     spacePrefixs: isize,
     spaceSuffixs: isize,
-    bIncludeStringQuotes: bool,
+    pub bIncludeStringQuotes: bool,
 }
 
 impl<'a> TStr<'a> {
+
+    pub fn set_str(&mut self, s: &'a str) {
+        self.theStr = s;
+        self.spacePrefixs = -1;
+        self.spaceSuffixs = -1;
+    }
 
     pub fn the_str(&self) -> &str {
         &self.theStr
