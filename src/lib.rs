@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 
+pub mod util;
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
