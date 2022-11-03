@@ -19,11 +19,35 @@ pub struct TStr<'a> {
 
 impl<'a> TStr<'a> {
 
+    pub fn from_str(s: &'a str) -> TStr<'a> {
+        TStr {
+            theStr: s,
+            spacePrefixs: -1,
+            spaceSuffixs: -1,
+            bIncludeStringQuotes: true,
+            bExpandEscapeSequences: true,
+            escSeqMap: HashMap::new(),
+        }
+    }
+
+    // Allow an existing TStr to be used wrt a new string/line
     pub fn set_str(&mut self, s: &'a str) {
         self.theStr = s;
         self.spacePrefixs = -1;
         self.spaceSuffixs = -1;
     }
+
+    pub fn escseq_clear(&mut self) {
+        self.escSeqMap.clear();
+    }
+
+    pub fn escseq_set(&mut self, find: char, replace: char) {
+        self.escSeqMap.insert(find, replace);
+    }
+
+}
+
+impl<'a> TStr<'a> {
 
     pub fn the_str(&self) -> &str {
         &self.theStr
@@ -75,29 +99,6 @@ impl<'a> TStr<'a> {
 
 impl<'a> TStr<'a> {
 
-    pub fn from_str(s: &'a str) -> TStr<'a> {
-        TStr {
-            theStr: s,
-            spacePrefixs: -1,
-            spaceSuffixs: -1,
-            bIncludeStringQuotes: true,
-            bExpandEscapeSequences: true,
-            escSeqMap: HashMap::new(),
-        }
-    }
-
-    pub fn escseq_clear(&mut self) {
-        self.escSeqMap.clear();
-    }
-
-    pub fn escseq_set(&mut self, find: char, replace: char) {
-        self.escSeqMap.insert(find, replace);
-    }
-
-}
-
-impl<'a> TStr<'a> {
-
     ///
     /// drop text till and including specified LastTokPos
     ///
@@ -117,7 +118,8 @@ impl<'a> TStr<'a> {
     /// * double quoted string is treated as a single token
     /// * () bracketed content is treated as a single token
     ///   * one can have brackets within brackets.
-    ///   * however the opening bracket should be prefixed with some alphanumeric text.
+    ///   * however the starting opening bracket should be prefixed with some alphanumeric text.
+    ///     This is a specific semantic, wrt how fuzzerk works currently.
     ///
     /// If any error identified while scanning for the token,
     /// a error message is returned to the caller, while parallley
