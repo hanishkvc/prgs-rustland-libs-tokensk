@@ -129,23 +129,30 @@ impl<'a> TStr<'a> {
 
     ///
     /// Get the next token from the current string
-    /// Normally space is used to delim tokens.
-    /// However
+    ///
+    /// User can specify the delimiter between the tokens.
+    /// * space ' ' or comma ',' could be commonly useful delimiters.
+    ///
+    /// However if certain type of tokens are found, the delimiter specific
+    /// to that kind is used, instead of what is specified by user.
+    ///
+    /// The specific types of tokens, which override the provided delimiter
+    /// include the following
     /// * double quoted string is treated as a single token
     /// * () bracketed content is treated as a single token
     ///   * one can have brackets within brackets.
-    ///   * however the starting opening bracket should be prefixed with some alphanumeric text.
+    ///   * however the starting opening bracket should be prefixed with some
+    ///     alphanumeric text.
     ///     This is a specific semantic, wrt how fuzzerk works currently.
     ///
-    /// If any error identified while scanning for the token,
-    /// a error message is returned to the caller, while parallley
-    /// dropping the token with error, so that next call to this
-    /// will potentially retrieve a valid token, if any still
-    /// in the string/line.
+    /// If any error identified while scanning for the token, a error message
+    /// is returned to the caller, while parallley dropping the token with error,
+    /// so that next call to this will potentially retrieve a valid token, if any
+    /// still in the string/line.
     ///
-    pub fn nexttok(&mut self, btrim: bool) -> Result<String, String> {
+    pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
-        let mut cend = ' ';
+        let mut cend = dlimdef;
         let mut bbegin = true;
         let mut bescape = false;
         let mut bcheckstart;
