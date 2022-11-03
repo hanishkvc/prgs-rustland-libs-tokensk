@@ -18,6 +18,7 @@ pub struct TStr<'a> {
     pub bIncludeStringQuotes: bool,
     pub bExpandEscapeSequences: bool,
     escSeqMap: HashMap<char, char>,
+    pub bMainBracketStandalone: bool,
 }
 
 impl<'a> TStr<'a> {
@@ -30,6 +31,7 @@ impl<'a> TStr<'a> {
             bIncludeStringQuotes: true,
             bExpandEscapeSequences: true,
             escSeqMap: HashMap::new(),
+            bMainBracketStandalone: false,
         }
     }
 
@@ -229,9 +231,13 @@ impl<'a> TStr<'a> {
             }
             // Help handle a bracketed block, by identifying its boundries
             if ch == '(' {
-                if bcheckstart {
+                if bcheckstart && !self.bMainBracketStandalone {
                     self.drop_adjust(chpos);
-                    return Err(format!("Tok:NextTok:( at start"));
+                    return Err(format!("Tok:NextTok:( at start, without any prefix text"));
+                }
+                if self.bMainBracketStandalone && !bcheckstart && (bracketcnt == 0) {
+                    self.drop_adjust(chpos);
+                    return Err(format!("Tok:NextTok:1st/Main ( didnt start at begin"));
                 }
                 if cend == dlimdef {
                     cend = ')';
@@ -246,8 +252,8 @@ impl<'a> TStr<'a> {
                     return Err(format!("Tok:NextTok:) at start"));
                 }
                 tok.push(ch);
+                bracketcnt -= 1;
                 if cend == ')' {
-                    bracketcnt -= 1;
                     if bracketcnt <= 0 {
                         break;
                     }

@@ -25,6 +25,7 @@ pub fn test_create() {
         bIncludeStringQuotes: true,
         bExpandEscapeSequences: true,
         escSeqMap: HashMap::new(),
+        bMainBracketStandalone: false,
     };
     let thestring = "  A string 21string ".to_string();
     let mut str2 = TStr::from_str(&thestring);
