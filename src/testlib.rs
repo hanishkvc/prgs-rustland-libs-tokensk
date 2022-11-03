@@ -1,0 +1,69 @@
+//!
+//! Test code for this library
+//! HanishKVC, 2022
+//!
+
+//!
+//! This is common code which is inturn used by
+//! * the tests module within the library source, as well as
+//! * the main.rs test app, to stop rust from stupidly complaining
+//!   about unused / dead code wrt the library's methods etal
+//!
+
+use crate::TStr;
+
+const MTAG: &str = "TEST:TestLib";
+
+pub fn test_create() {
+    let mtag = format!("{}:TestCreate", MTAG);
+    let mut str1 = TStr { theStr: "A direct string string", spacePrefixs: 0, spaceSuffixs: 0, bIncludeStringQuotes: true };
+    let thestring = "  A string 21string ".to_string();
+    let mut str2 = TStr::from_str(&thestring);
+    let mut str3 = TStr::from_str(" A str 12string  ");
+    print!("{}:Created TStrs: {:?}, {:?}, {:?}\n", mtag, str1, str2, str3);
+    //print!("Str1:{}:p{},s{}\n", str1.the_str(), str1.space_prefixs(), str1.space_suffixs());
+    print!("{}:Str1:p{},s{}:{}\n", mtag, str1.space_prefixs(), str1.space_suffixs(), str1.the_str());
+    print!("{}:Str2:p{},s{}:{}\n", mtag, str2.space_prefixs(), str2.space_suffixs(), str2.the_str());
+    print!("{}:Str3:p{},s{}:{}\n", mtag, str3.space_prefixs(), str3.space_suffixs(), str3.the_str());
+}
+
+pub fn test_create_raw() {
+    let mtag = format!("{}:TestCreateRaw", MTAG);
+    let thestring = "  A string 21string ".to_string();
+    let mut str2 = TStr::from_str(&thestring);
+    let mut str3 = TStr::from_str(" A str 12string  ");
+    print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.space_prefixs_raw(), str2.space_suffixs_raw());
+    print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
+    str2.trim();
+    str3.trim();
+    print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.space_prefixs_raw(), str2.space_suffixs_raw());
+    print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
+}
+
+
+pub fn test_nexttoken() {
+    let mtag = format!("{}:TestNextToken", MTAG);
+    let testlines = vec![
+        "what now",
+        "   hello wold ",
+        "  123 hello    0x123",
+        "  test( \"hello  world\", 123, what(0x123))",
+        "\" lests check brackets within string what(yes, notnow,) \"",
+        "\" lests check brackets within string what(yes, notnow,) ending quote missing",
+        "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
+        "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",
+        ];
+    for line in testlines {
+        let mut tline = TStr::from_str(line);
+        print!("{}:Line:[{}]\n", mtag, line);
+        while tline.remaining_len() > 0 {
+            let gottok = tline.nexttok(true);
+            if gottok.is_err() {
+                print!("ERRR:{}:{}\n", mtag, gottok.unwrap_err());
+            } else {
+                let gottok = gottok.unwrap();
+                print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
+            }
+        }
+    }
+}

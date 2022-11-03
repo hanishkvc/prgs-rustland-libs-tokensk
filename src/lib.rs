@@ -201,6 +201,7 @@ impl<'a> TStr<'a> {
 
 }
 
+pub mod testlib;
 
 #[cfg(test)]
 mod tests {
@@ -208,13 +209,13 @@ mod tests {
 
     #[test]
     fn test_create() {
-        let mut str1 = TStr { theStr: "A direct string string", spacePrefixs: 0, spaceSuffixs: 0, bIncludeStringQuotes: true };
-        let mut str2 = TStr::from_str("  A string 21string ");
-        let mut str3 = TStr::from_str(" A str 12string  ");
-        print!("Created TStrings: {:?}, {:?}, {:?}\n", str1, str2, str3);
-        print!("Str1: {}, {}\n", str1.space_prefixs(), str1.space_suffixs());
-        print!("Str2: {}, {}\n", str2.space_prefixs(), str2.space_suffixs());
-        print!("Str3: {}, {}\n", str3.space_prefixs(), str3.space_suffixs());
+        testlib::test_create();
+        testlib::test_create_raw();
+    }
+
+    #[test]
+    fn test_nexttoken() {
+        testlib::test_nexttoken();
     }
 
 }
