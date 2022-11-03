@@ -155,16 +155,16 @@ impl<'a> TStr<'a> {
         let mut bracketcnt = 0;
         for i in 0..vchars.len() {
             (chpos, ch) = vchars[i];
-            print!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos);
+            //log_d(format!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos));
             if bescape {
-                print!("DBUG:NextTok:In EscSeq:{}\n", ch);
+                //log_d(format!("DBUG:NextTok:In EscSeq:{}\n", ch));
                 if self.bExpandEscapeSequences {
                     let replace = self.escSeqMap.get(&ch);
                     if replace.is_none() {
                         self.drop_adjust(chpos);
                         return Err(format!("Tok:NextTok:Unknown escseq [{}]", ch));
                     }
-                    print!("DBUG:NextTok:EscSeq:{}:=:{:?}:\n", ch, replace);
+                    //log_d(format!("DBUG:NextTok:EscSeq:{}:=:{:?}:\n", ch, replace));
                     tok.push(*replace.unwrap())
                 } else {
                     tok.push(ch);
