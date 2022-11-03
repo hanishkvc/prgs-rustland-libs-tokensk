@@ -163,6 +163,7 @@ impl<'a> TStr<'a> {
         for i in 0..vchars.len() {
             (chpos, ch) = vchars[i];
             //log_d(format!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos));
+            // Handle escape sequence, if we are in one
             if bescape {
                 //log_d(format!("DBUG:NextTok:In EscSeq:{}\n", ch));
                 if self.bExpandEscapeSequences {
@@ -179,6 +180,8 @@ impl<'a> TStr<'a> {
                 bescape = false;
                 continue;
             }
+            // Handle space char,
+            // also taking care of trimming it at the beginning, if requested
             if ch == ' ' {
                 if bbegin {
                     if !btrim {
@@ -198,8 +201,9 @@ impl<'a> TStr<'a> {
             } else {
                 bcheckstart = false;
             }
+            // Help with handling double quoted strings
             if ch == '"' {
-                if self.bIncludeStringQuotes {
+                if self.bIncludeStringQuotes || (ch != cend) {
                     tok.push(ch);
                 }
                 if cend == ch {
@@ -209,7 +213,9 @@ impl<'a> TStr<'a> {
                     cend = ch;
                     continue;
                 }
+                continue;
             }
+            // Identify starting of a escape sequence
             if ch == '\\' {
                 if bcheckstart {
                     self.drop_adjust(chpos);
@@ -218,6 +224,7 @@ impl<'a> TStr<'a> {
                 bescape = true;
                 continue;
             }
+            // Help handle a bracketed block, by identifying its boundries
             if ch == '(' {
                 if bcheckstart {
                     self.drop_adjust(chpos);
@@ -244,6 +251,7 @@ impl<'a> TStr<'a> {
                 }
                 continue;
             }
+
             tok.push(ch);
         }
         self.drop_adjust(chpos);
