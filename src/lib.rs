@@ -266,7 +266,18 @@ impl<'a> TStr<'a> {
         Ok(vtoks)
     }
 
+    pub fn split_once(&mut self) -> Result<(String, String), String> {
+        let gottok = self.nexttok(true);
+        if gottok.is_err() {
+            return Err(gottok.unwrap_err());
+        }
+        return Ok((gottok.unwrap(), self.the_str().to_string()));
+
+    }
+
 }
+
+
 
 pub mod testlib;
 
