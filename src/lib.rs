@@ -4,6 +4,8 @@
 //!
 
 use std::collections::HashMap;
+use std::fmt;
+
 
 pub mod util;
 
@@ -53,6 +55,12 @@ impl<'a> TStr<'a> {
         self.escSeqMap.insert('"', '"');
     }
 
+}
+
+impl<'a> fmt::Display for TStr<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!("TStr[{}]", self.the_str()))
+    }
 }
 
 impl<'a> TStr<'a> {
@@ -236,9 +244,16 @@ impl<'a> TStr<'a> {
     }
 
     ///
-    /// Return remaining text in the current line, which is not yet tokenised/extracted
+    /// Return remaining text len wrt the current line, which is not yet tokenised/extracted
     ///
     pub fn remaining_len(&self) -> usize {
+        self.theStr.len()
+    }
+
+    ///
+    /// Return the length of the string still left inside, yet to be tokenising/...
+    ///
+    pub fn len(&self) -> usize {
         self.theStr.len()
     }
 
@@ -266,13 +281,28 @@ impl<'a> TStr<'a> {
         Ok(vtoks)
     }
 
-    pub fn split_once(&mut self) -> Result<(String, String), String> {
+}
+
+impl<'a> TStr<'a> {
+
+    pub fn split_once(&mut self, dlim: char) -> Result<(String, String), String> {
+        if dlim != ' ' {
+            todo!("TStr:SplitOnce:Currently [{}] not yet supported as a dlim", dlim);
+        }
         let gottok = self.nexttok(true);
         if gottok.is_err() {
             return Err(gottok.unwrap_err());
         }
         return Ok((gottok.unwrap(), self.the_str().to_string()));
 
+    }
+
+    pub fn char_first(&self) -> Option<char> {
+        self.theStr.chars().nth(0)
+    }
+
+    pub fn char_last(&self) -> Option<char> {
+        self.theStr.chars().last()
     }
 
 }
