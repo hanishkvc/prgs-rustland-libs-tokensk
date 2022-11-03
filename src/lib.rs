@@ -150,6 +150,9 @@ impl<'a> TStr<'a> {
     /// so that next call to this will potentially retrieve a valid token, if any
     /// still in the string/line.
     ///
+    /// If a escape sequence is found anywhere other than begining of the token,
+    /// it will be processed/expanded, if requested.
+    ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
         let mut cend = dlimdef;
@@ -230,7 +233,7 @@ impl<'a> TStr<'a> {
                     self.drop_adjust(chpos);
                     return Err(format!("Tok:NextTok:( at start"));
                 }
-                if cend == ' ' {
+                if cend == dlimdef {
                     cend = ')';
                 }
                 bracketcnt += 1;
@@ -251,7 +254,14 @@ impl<'a> TStr<'a> {
                 }
                 continue;
             }
-
+            // Handle the delimiter char specified/passed
+            if ch == dlimdef {
+                if ch == cend {
+                    break;
+                }
+            }
+            // Handle other chars, as well as any of above, which has been
+            // allowed to fall through to here.
             tok.push(ch);
         }
         self.drop_adjust(chpos);
