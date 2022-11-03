@@ -10,13 +10,22 @@
 //!   about unused / dead code wrt the library's methods etal
 //!
 
+use std::collections::HashMap;
+
 use crate::TStr;
 
 const MTAG: &str = "TEST:TestLib";
 
 pub fn test_create() {
     let mtag = format!("{}:TestCreate", MTAG);
-    let mut str1 = TStr { theStr: "A direct string string", spacePrefixs: 0, spaceSuffixs: 0, bIncludeStringQuotes: true };
+    let mut str1 = TStr {
+        theStr: "A direct string string",
+        spacePrefixs: 0,
+        spaceSuffixs: 0,
+        bIncludeStringQuotes: true,
+        bExpandEscapeSequences: true,
+        escSeqMap: HashMap::new(),
+    };
     let thestring = "  A string 21string ".to_string();
     let mut str2 = TStr::from_str(&thestring);
     let mut str3 = TStr::from_str(" A str 12string  ");
@@ -45,10 +54,10 @@ pub fn test_nexttoken() {
     let mtag = format!("{}:TestNextToken", MTAG);
     let testlines = vec![
         "what now",
-        "   hello wold ",
+        "   hello\n wold ",
         "  123 hello    0x123",
         "  test( \"hello  world\", 123, what(0x123))",
-        "\" lests check brackets within string what(yes, notnow,) \"",
+        "\" lests chec\tk brackets within string what(yes, notnow,) \"",
         "\" lests check brackets within string what(yes, notnow,) ending quote missing",
         "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
         "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",

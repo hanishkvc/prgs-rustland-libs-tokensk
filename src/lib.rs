@@ -3,6 +3,8 @@
 //! HanishKVC, 2022
 //!
 
+use std::collections::HashMap;
+
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
@@ -11,6 +13,8 @@ pub struct TStr<'a> {
     spacePrefixs: isize,
     spaceSuffixs: isize,
     pub bIncludeStringQuotes: bool,
+    pub bExpandEscapeSequences: bool,
+    escSeqMap: HashMap<char, char>,
 }
 
 impl<'a> TStr<'a> {
@@ -77,7 +81,17 @@ impl<'a> TStr<'a> {
             spacePrefixs: -1,
             spaceSuffixs: -1,
             bIncludeStringQuotes: true,
+            bExpandEscapeSequences: true,
+            escSeqMap: HashMap::new(),
         }
+    }
+
+    pub fn escseq_clear(&mut self) {
+        self.escSeqMap.clear();
+    }
+
+    pub fn escseq_set(&mut self, find: char, replace: char) {
+        self.escSeqMap.insert(find, replace);
     }
 
 }
@@ -103,6 +117,7 @@ impl<'a> TStr<'a> {
     /// * double quoted string is treated as a single token
     /// * () bracketed content is treated as a single token
     ///   * one can have brackets within brackets.
+    ///   * however the opening bracket should be prefixed with some alphanumeric text.
     ///
     /// If any error identified while scanning for the token,
     /// a error message is returned to the caller, while parallley
@@ -123,7 +138,16 @@ impl<'a> TStr<'a> {
         for i in 0..vchars.len() {
             (chpos, ch) = vchars[i];
             if bescape {
-                tok.push(ch);
+                if self.bExpandEscapeSequences {
+                    let replace = self.escSeqMap.get(&ch);
+                    if replace.is_none() {
+                        self.drop_adjust(chpos);
+                        return Err(format!("Tok:NextTok:Unknown escseq [{}]", ch));
+                    }
+                    tok.push(*replace.unwrap())
+                } else {
+                    tok.push(ch);
+                }
                 bescape = false;
                 continue;
             }
