@@ -187,7 +187,12 @@ impl<'a> TStr<'a> {
     /// it will be processed/expanded, if requested.
     ///
     /// If user requests trimming, then any spaces before the token will be
-    /// trimmed out. So also will any spaces following a block type token.
+    /// trimmed out. So also will any spaces
+    /// * following a block type token.
+    /// * at the end of a non block type token, if a non space delimiter is used.
+    ///
+    /// NOTE: If space is the delimiter, then any spaces following a token will
+    /// be trimmed out, when the subsequent/next token is requested.
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
@@ -325,6 +330,11 @@ impl<'a> TStr<'a> {
             tok.push(ch);
         }
         self.drop_adjust(chpos);
+        // trim spaces that can be at the end, wrt non block token,
+        // when a non space dlimdef is used
+        if btrim && !bendphase_block {
+            tok = tok.trim().to_string();
+        }
         return Ok(tok);
     }
 

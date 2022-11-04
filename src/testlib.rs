@@ -93,8 +93,8 @@ pub fn test_nexttoken() {
     test_nexttoken_ex(testlines.clone(), ' ');
     test_nexttoken_ex(testlines, ',');
     let testlines = vec![
-        "line with spaces and, commas,yes,commas",
-        " test(what,now with space,also),bit more text "
+        "line with spaces and, commas,yes   ,commas",
+        " test(what,now with space,also)   ,bit more text "
     ];
     test_nexttoken_ex(testlines.clone(), ' ');
     test_nexttoken_ex(testlines.clone(), ',');
