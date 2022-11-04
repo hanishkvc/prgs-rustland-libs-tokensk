@@ -20,8 +20,8 @@ pub fn test_create() {
     let mtag = format!("{}:TestCreate", MTAG);
     let mut str1 = TStr {
         theStr: "A direct string string",
-        spacePrefixs: 0,
-        spaceSuffixs: 0,
+        trimmedPrefixCnt: 0,
+        trimmedSuffixCnt: 0,
         bIncludeStringQuotes: true,
         bExpandEscapeSequences: true,
         escSeqMap: HashMap::new(),
@@ -32,9 +32,9 @@ pub fn test_create() {
     let mut str3 = TStr::from_str(" A str 12string  ");
     print!("{}:Created TStrs: {:?}, {:?}, {:?}\n", mtag, str1, str2, str3);
     //print!("Str1:{}:p{},s{}\n", str1.the_str(), str1.space_prefixs(), str1.space_suffixs());
-    print!("{}:Str1:p{},s{}:{}\n", mtag, str1.space_prefixs(), str1.space_suffixs(), str1.the_str());
-    print!("{}:Str2:p{},s{}:{}\n", mtag, str2.space_prefixs(), str2.space_suffixs(), str2.the_str());
-    print!("{}:Str3:p{},s{}:{}\n", mtag, str3.space_prefixs(), str3.space_suffixs(), str3.the_str());
+    print!("{}:Str1:p{},s{}:{}\n", mtag, str1.trimmed_prefix_cnt(), str1.trimmed_suffix_cnt(), str1.the_str());
+    print!("{}:Str2:p{},s{}:{}\n", mtag, str2.trimmed_prefix_cnt(), str2.trimmed_suffix_cnt(), str2.the_str());
+    print!("{}:Str3:p{},s{}:{}\n", mtag, str3.trimmed_prefix_cnt(), str3.trimmed_suffix_cnt(), str3.the_str());
 }
 
 pub fn test_create_raw() {
@@ -42,18 +42,18 @@ pub fn test_create_raw() {
     let thestring = "  A string 21string ".to_string();
     let mut str2 = TStr::from_str(&thestring);
     let mut str3 = TStr::from_str(" A str 12string  ");
-    print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.space_prefixs_raw(), str2.space_suffixs_raw());
-    print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
+    print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.trimmed_prefix_cnt_raw(), str2.trimmed_suffix_cnt_raw());
+    print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.trimmed_prefix_cnt_raw(), str3.trimmed_suffix_cnt_raw());
     str2.trim();
     str3.trim();
-    print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.space_prefixs_raw(), str2.space_suffixs_raw());
-    print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.space_prefixs_raw(), str3.space_suffixs_raw());
+    print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.trimmed_prefix_cnt_raw(), str2.trimmed_suffix_cnt_raw());
+    print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.trimmed_prefix_cnt_raw(), str3.trimmed_suffix_cnt_raw());
 }
 
 
 pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
     let mtag = format!("{}:TestNextToken", MTAG);
-    print!("\n\n\n\n{}: **** Lets test nexttoken ****\n\n", mtag);
+    print!("\n\n\n\n{}: **** Lets test nexttoken [{}] ****\n\n", mtag, dlimdef);
     let mut tline = TStr::from_str("");
     tline.escseq_defaults();
     for line in testlines {

@@ -22,9 +22,9 @@ pub mod util;
 pub struct TStr<'a> {
     theStr: &'a str,
     /// The amount of space trimmed at the begining of the string
-    spacePrefixs: isize,
+    trimmedPrefixCnt: isize,
     /// The amount of space trimmed at the end of the string
-    spaceSuffixs: isize,
+    trimmedSuffixCnt: isize,
     /// Should the double quote protecting a string should be retained
     /// in the returned string wrt nexttok or not.
     pub bIncludeStringQuotes: bool,
@@ -43,8 +43,8 @@ impl<'a> TStr<'a> {
     pub fn from_str(s: &'a str) -> TStr<'a> {
         TStr {
             theStr: s,
-            spacePrefixs: -1,
-            spaceSuffixs: -1,
+            trimmedPrefixCnt: -1,
+            trimmedSuffixCnt: -1,
             bIncludeStringQuotes: true,
             bExpandEscapeSequences: true,
             escSeqMap: HashMap::new(),
@@ -55,8 +55,8 @@ impl<'a> TStr<'a> {
     /// Allow an existing TStr to be used wrt a new string/line
     pub fn set_str(&mut self, s: &'a str) {
         self.theStr = s;
-        self.spacePrefixs = -1;
-        self.spaceSuffixs = -1;
+        self.trimmedPrefixCnt = -1;
+        self.trimmedSuffixCnt = -1;
     }
 
     /// Clear any existing supported escape sequences
@@ -87,16 +87,17 @@ impl<'a> fmt::Display for TStr<'a> {
 
 impl<'a> TStr<'a> {
 
+    /// retrieve the internal string slice, as it stands currently
     pub fn the_str(&self) -> &str {
         &self.theStr
     }
 
-    pub fn space_prefixs_raw(&self) -> isize {
-        self.spacePrefixs
+    pub fn trimmed_prefix_cnt_raw(&self) -> isize {
+        self.trimmedPrefixCnt
     }
 
-    pub fn space_suffixs_raw(&self) -> isize {
-        self.spaceSuffixs
+    pub fn trimmed_suffix_cnt_raw(&self) -> isize {
+        self.trimmedSuffixCnt
     }
 
     ///
@@ -108,29 +109,29 @@ impl<'a> TStr<'a> {
         let olen = self.theStr.len();
         let nstr = self.theStr.trim_start();
         let nlen = nstr.len();
-        self.spacePrefixs = (olen - nlen) as isize;
+        self.trimmedPrefixCnt = (olen - nlen) as isize;
         self.theStr = nstr.trim();
-        self.spaceSuffixs = (nlen - self.theStr.len()) as isize;
+        self.trimmedSuffixCnt = (nlen - self.theStr.len()) as isize;
     }
 
-    /// Returns the number of spaces if any at the beginning of the string,
+    /// Returns the number of spaces if any at the beginning of the string, which was trimmed.
     /// If trim has not been called before, it will be automatically called.
-    pub fn space_prefixs(&mut self) -> usize {
-        if self.spacePrefixs == -1 {
+    pub fn trimmed_prefix_cnt(&mut self) -> usize {
+        if self.trimmedPrefixCnt == -1 {
             self.trim();
-            return self.spacePrefixs as usize;
+            return self.trimmedPrefixCnt as usize;
         }
-        return self.spacePrefixs as usize;
+        return self.trimmedPrefixCnt as usize;
     }
 
-    /// Returns the number of spaces if any at the end of the string,
+    /// Returns the number of spaces if any at the end of the string, which was trimmed.
     /// If trim has not been called before, it will be automatically called.
-    pub fn space_suffixs(&mut self) -> usize {
-        if self.spaceSuffixs == -1 {
+    pub fn trimmed_suffix_cnt(&mut self) -> usize {
+        if self.trimmedSuffixCnt == -1 {
             self.trim();
-            return self.spaceSuffixs as usize;
+            return self.trimmedSuffixCnt as usize;
         }
-        return self.spaceSuffixs as usize;
+        return self.trimmedSuffixCnt as usize;
     }
 
 }
@@ -355,10 +356,12 @@ impl<'a> TStr<'a> {
         return Ok((gottok.unwrap(), self.the_str().to_string()));
     }
 
+    /// Return the 1st (0th index) character in the internal string slice
     pub fn char_first(&self) -> Option<char> {
         self.theStr.chars().nth(0)
     }
 
+    /// Return the last character in the internal string slice
     pub fn char_last(&self) -> Option<char> {
         self.theStr.chars().last()
     }
