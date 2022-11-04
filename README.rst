@@ -47,6 +47,10 @@ This includes
 
   * meprefix( what else (what (no (no (nooo   not again) ) ) whats happening) )
 
+It provides methods for trimming the string, getting 1 token at a time or all tokens in 1 shot,
+getting 1st or last char, split once wrt a given delimiter, peel a bracket wrt its prefix name
+and members, ...
+
 
 Usage
 #######
@@ -55,11 +59,32 @@ Look at the documentation in the source, as well as the sample test app and test
 
 A code sample::
 
-   tstr = TStr::from_str(" a test string")
+   #
+   # Get tokens one at a time
+   #
+   tstr = TStr::from_str(" a test string");
    print!("INFO:Looking at [{}]", tstr);
    while tstr.remaining_len() > 0 {
         let tok = tstr.nexttok(' ', true);
         print!("\ttok[{}], remaining[{}]\n", tok, tstr.the_str());
    }
+   #
+   # Get tokens in one shot
+   #
+   tstr = TStr::from_str(" a test string");
+   print!("\t1Short:[{}]", tstr.tokens_vec(' ', true, true).unwrap());
+   #
+   # Handle escape sequences
+   #
+   tstr = TStr::from_str(" a test\tstring with\\t escape sequences");
+   tstr.escseq_defaults();
+   tstr = TStr::from_str_ex(" a test\tstring with\\t escape sequences", true, true);
+   #
+   # Handle peeling a bracketted text
+   #
+   tstr = TStr::from_str("testme( a test, 123, msg in a bracket)");
+   sprefix = tstr.peel_bracket('(');
+   scontents = tstr.the_str();
+   vContentTokens = tstr.tokens_vec(',', true, true).unwrap();
 
 
