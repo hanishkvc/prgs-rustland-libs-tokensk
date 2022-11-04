@@ -37,6 +37,8 @@ pub struct TStr<'a> {
     pub bMainBracketStandalone: bool,
 }
 
+
+/// Creation and setup related methods
 impl<'a> TStr<'a> {
 
     /// create a new instance of TStr for the given string slice
@@ -79,12 +81,16 @@ impl<'a> TStr<'a> {
 
 }
 
+
+/// Add support for std::fmt::Display trait
 impl<'a> fmt::Display for TStr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("TStr[{}]", self.the_str()))
     }
 }
 
+
+/// the base set of methods around the string slice
 impl<'a> TStr<'a> {
 
     /// retrieve the internal string slice, as it stands currently
@@ -136,6 +142,8 @@ impl<'a> TStr<'a> {
 
 }
 
+
+/// Tokenisation related methods
 impl<'a> TStr<'a> {
 
     ///
@@ -309,10 +317,6 @@ impl<'a> TStr<'a> {
         self.theStr.len()
     }
 
-}
-
-impl<'a> TStr<'a> {
-
     ///
     /// Get a vector of all the tokens in the current string/line
     /// One can control
@@ -339,6 +343,8 @@ impl<'a> TStr<'a> {
 
 }
 
+
+/// Helper methods, matching similar functionality of strings in general
 impl<'a> TStr<'a> {
 
     ///
