@@ -85,7 +85,7 @@ impl<'a> TStr<'a> {
 /// Add support for std::fmt::Display trait
 impl<'a> fmt::Display for TStr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_fmt(format_args!("TStr[{}]", self.the_str()))
+        f.write_fmt(format_args!("{}", self.the_str()))
     }
 }
 
@@ -386,12 +386,16 @@ impl<'a> TStr<'a> {
     ///
     /// User can specify the type of the begining bracket
     ///
-    pub fn peel_bracket(&mut self, bracket_begin: char) -> String {
+    pub fn peel_bracket(&mut self, bracket_begin: char) -> Result<String, String> {
         self.trim();
-        let prefixplus = self.theStr.split_once(bracket_begin).unwrap();
+        let prefixplus = self.theStr.split_once(bracket_begin);
+        if prefixplus.is_none() {
+            return Err(format!("TStr:PeelBracket:{}:from:{}:failed", bracket_begin, self.theStr));
+        }
+        let prefixplus = prefixplus.unwrap();
         let smembers = &prefixplus.1[..prefixplus.1.len()-1];
         self.theStr = smembers;
-        return prefixplus.0.to_string();
+        return Ok(prefixplus.0.to_string());
     }
 
 }
