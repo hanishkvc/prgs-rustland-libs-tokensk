@@ -412,7 +412,9 @@ impl<'a> TStr<'a> {
     }
 
     ///
-    /// Retrieve upto n tokens and the remaining part of the string (if any).
+    /// Retrieve upto n tokens.
+    /// The nth token will be the remaining part of the string (if any, ie if there
+    /// are more than n possible tokens in the string).
     ///
     /// User provided specific delimiter will be used, if found, as one is scanning
     /// through the internal string slice. However if any block type tokens are found,
@@ -421,7 +423,7 @@ impl<'a> TStr<'a> {
     ///
     pub fn splitn(&mut self, reqcnt: usize, dlimdef: char) -> Result<Vec<String>, String> {
         let mut vres = Vec::new();
-        for _i in 0..reqcnt {
+        for _i in 1..reqcnt {
             let tok = self.nexttok(dlimdef, true);
             if tok.is_err() {
                 return Err(format!("TStr:SplitN:{}", tok.unwrap_err()));
