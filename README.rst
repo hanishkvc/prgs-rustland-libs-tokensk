@@ -80,11 +80,16 @@ A code sample::
    tstr.escseq_defaults();
    tstr = TStr::from_str_ex(" a test\tstring with\\t escape sequences", true, true);
    #
-   # Handle peeling a bracketted text
+   # Peel bracketted content
    #
    tstr = TStr::from_str("testme( a test, 123, msg in a bracket)");
    sprefix = tstr.peel_bracket('(');
    scontents = tstr.the_str();
    vContentTokens = tstr.tokens_vec(',', true, true).unwrap();
+   #
+   # Get first, nth and last chars
+   #
+   let tstr = TStr::from_str("0123456789 Test extracting chars ॐ"");
+   print!("TEST:FirstNthLast:{},{},{}",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
 
 

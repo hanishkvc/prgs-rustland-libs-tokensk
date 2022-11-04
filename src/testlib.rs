@@ -99,3 +99,14 @@ pub fn test_nexttoken() {
     test_nexttoken_ex(testlines.clone(), ' ');
     test_nexttoken_ex(testlines.clone(), ',');
 }
+
+pub fn test_peel_bracket() {
+    let mut tstr = TStr::from_str("testbracket( 123, abc, \" msg inside bracket\")");
+    let prefix = tstr.peel_bracket('(').unwrap();
+    print!("TEST:PeelBracket:prefix[{}], contents[{}]\n", prefix, tstr.the_str());
+}
+
+pub fn test_first_nth_last() {
+    let tstr = TStr::from_str("0123456789 Test extracting chars ॐ");
+    print!("TEST:FirstNthLast:{},{},{}",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
+}

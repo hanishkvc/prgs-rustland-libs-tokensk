@@ -421,6 +421,11 @@ impl<'a> TStr<'a> {
         self.theStr.chars().last()
     }
 
+    /// Return the nth character in the internal string slice
+    pub fn char_nth(&self, pos: usize) -> Option<char> {
+        self.theStr.chars().nth(pos)
+    }
+
 }
 
 
@@ -465,6 +470,16 @@ mod tests {
     #[test]
     fn test_nexttoken() {
         testlib::test_nexttoken();
+    }
+
+    #[test]
+    fn test_peel_bracket() {
+        testlib::test_peel_bracket();
+    }
+
+    #[test]
+    fn test_first_nth_last() {
+        testlib::test_first_nth_last();
     }
 
 }
