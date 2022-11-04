@@ -375,6 +375,27 @@ impl<'a> TStr<'a> {
 }
 
 
+impl<'a> TStr<'a> {
+
+    ///
+    /// Assumes that a bracketed block is what is currently stored in this TStr instance,
+    /// inturn
+    /// * return any prefix text associated with the bracket
+    /// * update this TStr instance to contain the string representing
+    ///   the contents of the bracket
+    ///
+    /// User can specify the type of the begining bracket
+    ///
+    pub fn peel_bracket(&mut self, bracket_begin: char) -> String {
+        self.trim();
+        let prefixplus = self.theStr.split_once(bracket_begin).unwrap();
+        let smembers = &prefixplus.1[..prefixplus.1.len()-1];
+        self.theStr = smembers;
+        return prefixplus.0.to_string();
+    }
+
+}
+
 
 pub mod testlib;
 
