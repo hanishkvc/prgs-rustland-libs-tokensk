@@ -411,6 +411,32 @@ impl<'a> TStr<'a> {
         return Ok((gottok.unwrap(), self.the_str().to_string()));
     }
 
+    ///
+    /// Retrieve upto n tokens and the remaining part of the string (if any).
+    ///
+    /// User provided specific delimiter will be used, if found, as one is scanning
+    /// through the internal string slice. However if any block type tokens are found,
+    /// they will be retrieved as part of the n tokens, even, if the delimiter following
+    /// it is different from the one provided.
+    ///
+    pub fn splitn(&mut self, reqcnt: usize, dlimdef: char) -> Result<Vec<String>, String> {
+        let mut vres = Vec::new();
+        for _i in 0..reqcnt {
+            let tok = self.nexttok(dlimdef, true);
+            if tok.is_err() {
+                return Err(format!("TStr:SplitN:{}", tok.unwrap_err()));
+            }
+            vres.push(tok.unwrap());
+            if self.remaining_len() == 0 {
+                break;
+            }
+        }
+        if self.remaining_len() > 0 {
+            vres.push(self.the_str().to_string())
+        }
+        Ok(vres)
+    }
+
     /// Return the 1st (0th index) character in the internal string slice
     pub fn char_first(&self) -> Option<char> {
         self.theStr.chars().nth(0)
@@ -480,6 +506,11 @@ mod tests {
     #[test]
     fn test_first_nth_last() {
         testlib::test_first_nth_last();
+    }
+
+    #[test]
+    fn test_splitn() {
+        testlib::test_splitn();
     }
 
 }

@@ -110,3 +110,16 @@ pub fn test_first_nth_last() {
     let tstr = TStr::from_str("0123456789 Test extracting chars ॐ");
     print!("TEST:FirstNthLast:{},{},{}",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
 }
+
+pub fn test_splitn_ex(instr: &str, splitn: usize, dlimdef: char) {
+    let mut tstr = TStr::from_str(instr);
+    let vstrs = tstr.splitn(splitn, dlimdef).unwrap();
+    print!("TEST:SplitN:{}:{}-[{}]:[{:?}]\n", instr, splitn, dlimdef, vstrs);
+}
+
+pub fn test_splitn() {
+    test_splitn_ex("one two three four five", 3, ' ');
+    test_splitn_ex("oneXXtwoXthree four five", 3, 'X');
+    test_splitn_ex("oneXXtwoXthree four five", 1, 'X');
+    test_splitn_ex("one two three four five", 3, 'X');
+}
