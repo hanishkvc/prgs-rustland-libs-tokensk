@@ -41,7 +41,7 @@ pub struct TStr<'a> {
 /// Creation and setup related methods
 impl<'a> TStr<'a> {
 
-    /// create a new instance of TStr for the given string slice
+    /// Create a new instance of TStr for the given string slice
     pub fn from_str(s: &'a str) -> TStr<'a> {
         TStr {
             theStr: s,
@@ -52,6 +52,20 @@ impl<'a> TStr<'a> {
             escSeqMap: HashMap::new(),
             bMainBracketStandalone: false,
         }
+    }
+
+    /// Create a new instance of TStr from the given string slice, additionally
+    /// * if btrim, trim the string and
+    /// * if bescseq, setup the library provided default escape sequences
+    pub fn from_str_ex(s: &'a str, btrim: bool, bescseq: bool) -> TStr<'a> {
+        let mut tstr = Self::from_str(s);
+        if btrim {
+            tstr.trim();
+        }
+        if bescseq {
+            tstr.escseq_defaults();
+        }
+        return tstr;
     }
 
     /// Allow an existing TStr to be used wrt a new string/line
