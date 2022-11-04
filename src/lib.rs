@@ -11,18 +11,35 @@ pub mod util;
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
+///
+/// Tokenisable String - created from a passed string slice
+/// * using from_str when creating a new instance
+/// * using set_str, when updating/reusing a existing instance
+///
+/// The tokenisation characteristics can be adjusted using some
+/// of the members in it.
+///
 pub struct TStr<'a> {
     theStr: &'a str,
+    /// The amount of space trimmed at the begining of the string
     spacePrefixs: isize,
+    /// The amount of space trimmed at the end of the string
     spaceSuffixs: isize,
+    /// Should the double quote protecting a string should be retained
+    /// in the returned string wrt nexttok or not.
     pub bIncludeStringQuotes: bool,
+    /// Should any escape sequences found during tokenising should be
+    /// processed/expanded into the special/non special char represented by them.
     pub bExpandEscapeSequences: bool,
+    /// Maintain the set of supported escape sequences and the underlying expanded char.
     escSeqMap: HashMap<char, char>,
+    /// If a bracket based token should have some textual prefix wrt the 1st opening bracket
     pub bMainBracketStandalone: bool,
 }
 
 impl<'a> TStr<'a> {
 
+    /// create a new instance of TStr for the given string slice
     pub fn from_str(s: &'a str) -> TStr<'a> {
         TStr {
             theStr: s,
@@ -35,21 +52,24 @@ impl<'a> TStr<'a> {
         }
     }
 
-    // Allow an existing TStr to be used wrt a new string/line
+    /// Allow an existing TStr to be used wrt a new string/line
     pub fn set_str(&mut self, s: &'a str) {
         self.theStr = s;
         self.spacePrefixs = -1;
         self.spaceSuffixs = -1;
     }
 
+    /// Clear any existing supported escape sequences
     pub fn escseq_clear(&mut self) {
         self.escSeqMap.clear();
     }
 
+    /// Add a new supported escape sequence
     pub fn escseq_set(&mut self, find: char, replace: char) {
         self.escSeqMap.insert(find, replace);
     }
 
+    /// Setup a set of predefined / common escape sequences
     pub fn escseq_defaults(&mut self) {
         self.escSeqMap.insert('n', '\n');
         self.escSeqMap.insert('t', '\t');
