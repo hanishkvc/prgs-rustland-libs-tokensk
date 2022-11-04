@@ -164,11 +164,13 @@ impl<'a> TStr<'a> {
     /// User can specify the delimiter between the tokens.
     /// * space ' ' or comma ',' could be commonly useful delimiters.
     ///
-    /// However if certain type of tokens are found, the delimiter specific
-    /// to that kind is used, instead of what is specified by user.
+    /// However if block tokens are found, ie tokens which can contain multiple
+    /// tokens within them. The delimiter specific to that block kind is used,
+    /// instead of what is specified by user. At the same time, if a user specified
+    /// delimiter follows the block type token, it will be trimmed out. So will
+    /// any whitespace following the block type token.
     ///
-    /// The specific types of tokens, which override the provided delimiter
-    /// include the following
+    /// The block type tokens, which override the provided delimiter include
     /// * double quoted string is treated as a single token
     /// * () bracketed content is treated as a single token
     ///   * one can have brackets within brackets.
@@ -184,6 +186,9 @@ impl<'a> TStr<'a> {
     /// If a escape sequence is found anywhere other than begining of the token,
     /// it will be processed/expanded, if requested.
     ///
+    /// If user requests trimming, then any spaces before the token will be
+    /// trimmed out. So also will any spaces following a block type token.
+    ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
         let mut cend = dlimdef;
@@ -194,9 +199,25 @@ impl<'a> TStr<'a> {
         let mut chpos= 0;
         let mut ch;
         let mut bracketcnt = 0;
+        let mut bendphase_block = false;
+        let mut endphase_pos = 0;
         for i in 0..vchars.len() {
             (chpos, ch) = vchars[i];
             //log_d(format!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos));
+            // Handle end phase wrt block type tokens,
+            // * remove spaces following a block token, if requested
+            // * remove any delimiter following a block token
+            if bendphase_block {
+                if (ch == ' ') && btrim {
+                    endphase_pos = chpos;
+                    continue;
+                }
+                if ch == dlimdef {
+                    break;
+                }
+                chpos = endphase_pos;
+                break;
+            }
             // Handle escape sequence, if we are in one
             if bescape {
                 //log_d(format!("DBUG:NextTok:In EscSeq:{}\n", ch));
@@ -241,7 +262,9 @@ impl<'a> TStr<'a> {
                     tok.push(ch);
                 }
                 if cend == ch {
-                    break;
+                    bendphase_block = true;
+                    endphase_pos = chpos;
+                    continue;
                 }
                 if bcheckstart {
                     cend = ch;
@@ -284,7 +307,9 @@ impl<'a> TStr<'a> {
                 bracketcnt -= 1;
                 if cend == ')' {
                     if bracketcnt <= 0 {
-                        break;
+                        bendphase_block = true;
+                        endphase_pos = chpos;
+                        continue;
                     }
                 }
                 continue;
