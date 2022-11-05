@@ -191,15 +191,9 @@ impl<'a> TStr<'a> {
 impl<'a> TStr<'a> {
 
     ///
-    /// Drop text till and including specified LastTokPos
+    /// Drop text till specified LastTokPos
     ///
-    /// TODO:
-    /// This logic can lead to a partial char bytes wrt the 1st char
-    /// in the updated internal string slice, if the lastTokPos points
-    /// to a multibyte char.
-    ///
-    pub fn drop_adjust(&mut self, mut lasttokpos: usize) {
-        lasttokpos += 1;
+    pub fn drop_adjust(&mut self, lasttokpos: usize) {
         if lasttokpos >= self.theStr.len() {
             self.theStr = &"";
         } else {
@@ -244,18 +238,33 @@ impl<'a> TStr<'a> {
     /// be trimmed out, when the subsequent/next token is requested.
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
-        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap);
+        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap.clone());
         let vcharprocs = nexttoken::default_vcharprocs();
+        let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
+            for vcp in &vcharprocs {
+                let act = vcp.process_char(&mut ctxt);
+                match act {
+                    nexttoken::Action::NextChar => break,
+                    nexttoken::Action::ContinueChain => continue,
+                    nexttoken::Action::DoneBreak => bdone=true,
+                }
+            }
+            if bdone {
+                break;
+            }
         }
-        self.drop_adjust(chpos);
+        if !bdone {
+            ctxt.endpos += 1;
+        }
+        self.drop_adjust(ctxt.endpos);
         // trim spaces that can be at the end, wrt non block token,
         // when a non space dlimdef is used
-        if btrim && !bendphase_block {
-            tok = tok.trim().to_string();
+        if btrim {
+            ctxt.tok = ctxt.tok.trim().to_string();
         }
-        return Ok(tok);
+        return Ok(ctxt.tok);
     }
 
     ///

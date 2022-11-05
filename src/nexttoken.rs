@@ -16,7 +16,7 @@ enum Phase {
     EndCleanup,
 }
 
-pub(crate) struct Ctxt {
+pub struct Ctxt {
     /// The characters of the string, to extract token from
     pub vchars: Vec<(usize, char)>,
     /// The initial delimiter specified by user
@@ -28,7 +28,7 @@ pub(crate) struct Ctxt {
     /// If we are in escape mode
     pub bescape: bool,
     /// The token being constructed
-    tok: String,
+    pub tok: String,
     /// The current char's byte position
     pub chpos: usize,
     /// The current char
@@ -37,7 +37,7 @@ pub(crate) struct Ctxt {
     btrim: bool,
     /// The byte position till which the source string should be trimmed
     /// after token has been extracted.
-    endpos: usize,
+    pub endpos: usize,
     esmap: HashMap<char, char>,
 }
 
@@ -269,7 +269,7 @@ impl CharType {
 }
 
 pub fn default_vcharprocs() -> Vec<CharType> {
-    let vcp = Vec::new();
+    let mut vcp = Vec::new();
     vcp.push(CharType::EscSeq('\\'));
     vcp.push(CharType::DelimSpace(' '));
     vcp.push(CharType::DelimString('"'));
