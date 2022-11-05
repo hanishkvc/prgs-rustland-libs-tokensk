@@ -48,8 +48,8 @@ This includes
   * meprefix( what else (what (no (no (nooo   not again) ) ) whats happening) )
 
 It provides methods for trimming the string, getting 1 token at a time or all tokens in 1 shot,
-getting 1st or last char, split once wrt a given delimiter, peel a bracket wrt its prefix name
-and members, ...
+getting 1st or Nth or last char, split once or n-times wrt a given delimiter, peel a bracket
+wrt its prefix name and members, ...
 
 
 Usage
