@@ -21,14 +21,22 @@ A token is any of the following
 
   * a test    123  string, 2nd token, third TOken
 
-* a string enclosed within double quotes
+* a string enclosed within quotes (double-quote by default)
 
   * " a test   123      string " "2nd token" "what the 3rd token"
   * " a test   123      string " , 2nd    token,     "what the 3rd token"
 
-* a bunch of bracketed content
+  * dont forget to escape the string boundry quote char, if it is present within the string
+    somewhere.
+
+* a bunch of bracketed content ('(' and ')' by default)
 
   * 1sttoken ( 2nd token what is this    , MeAPrefix(a bunch   of) bracketed content ) 3rdToken
+
+  * a bracketed content can contain embedded bracketed contents within them.
+
+  * dont forget to escape the bracket boundry chars, if they are present as part of a string
+    literal within.
 
 
 The logic is encapsulated into a new custom type called TStr.
@@ -36,16 +44,17 @@ The logic is encapsulated into a new custom type called TStr.
 One can control tokeniser behaviour by configuring certain properties/members of TStr instance,
 and or deciding which helper method to call wrt extracting contents of the string.
 
+These includes
 
-This includes
+* whether enclosing/boundry/marker quotes are retained or not wrt string tokens
 
-* whether enclosing double quotes are retained or not wrt string tokens
-
-* whether escape sequences if any in the given string are expanded/processed or not.
+* whether escape sequences if any found by TStr are expanded/processed or not.
 
 * whether bracketed blocks additionally include a textual prefix wrt their 1st opening bracket.
 
   * meprefix( what else (what (no (no (nooo   not again) ) ) whats happening) )
+
+* set the string and bracket boundry marker chars.
 
 It provides methods for trimming the string, getting 1 token at a time or all tokens in 1 shot,
 getting 1st or Nth or last char, split once or n-times wrt a given delimiter, peel a bracket

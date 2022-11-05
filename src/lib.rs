@@ -332,11 +332,11 @@ impl<'a> TStr<'a> {
             if ch == self.charBracketBegin {
                 if bcheckstart && !self.bMainBracketStandalone {
                     self.drop_adjust(chpos);
-                    return Err(format!("Tok:NextTok:( at start, without any prefix text"));
+                    return Err(format!("Tok:NextTok:{} at start, without any prefix text", self.charBracketBegin));
                 }
                 if self.bMainBracketStandalone && !bcheckstart && (bracketcnt == 0) {
                     self.drop_adjust(chpos);
-                    return Err(format!("Tok:NextTok:1st/Main ( didnt start at begin"));
+                    return Err(format!("Tok:NextTok:1st/Main {} didnt start at begin", self.charBracketBegin));
                 }
                 if cend == dlimdef {
                     cend = self.charBracketEnd;
@@ -348,7 +348,7 @@ impl<'a> TStr<'a> {
             if ch == self.charBracketEnd {
                 if bcheckstart {
                     self.drop_adjust(chpos);
-                    return Err(format!("Tok:NextTok:) at start"));
+                    return Err(format!("Tok:NextTok:{} at start", self.charBracketEnd));
                 }
                 tok.push(ch);
                 bracketcnt -= 1;
