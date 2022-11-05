@@ -3,6 +3,8 @@
 //! HanishKVC, 2022
 //!
 
+use std::collections::HashMap;
+
 
 enum Phase {
     Begin,
@@ -36,11 +38,12 @@ pub(crate) struct Ctxt {
     /// The byte position till which the source string should be trimmed
     /// after token has been extracted.
     endpos: usize,
+    esmap: HashMap<char, char>,
 }
 
 impl Ctxt {
 
-    pub fn new(thestr: &str, dlimdef: char, btrim: bool) -> Ctxt {
+    pub fn new(thestr: &str, dlimdef: char, btrim: bool, esmap: HashMap<char, char>) -> Ctxt {
         Ctxt {
             vchars: thestr.char_indices().collect(),
             dlimdef: dlimdef,
@@ -52,6 +55,7 @@ impl Ctxt {
             ch: ' ',
             btrim: btrim,
             endpos: 0,
+            esmap: esmap,
         }
     }
 
@@ -65,6 +69,7 @@ pub enum Action {
 }
 
 pub enum CharType {
+    EscSeq,
     DelimSpace(char),
     DelimNormal(char),
     DelimString(char),
@@ -76,6 +81,18 @@ impl CharType {
 
     pub fn process_char(&self, x: &mut Ctxt) -> Action {
         match *self {
+            CharType::EscSeq => {
+                if !x.bescape {
+                    return Action::ContinueChain;
+                }
+                let replace = x.esmap.get(&x.ch);
+                if replace.is_none() {
+                    panic!("DBUG:NextToken:Unknown escseq [{}]", x.ch);
+                }
+                x.tok.push(*replace.unwrap());
+                x.bescape = false;
+                return Action::NextChar;
+            }
             CharType::DelimSpace(chk) => {
                 if x.ch != chk {
                     return Action::ContinueChain;
@@ -242,6 +259,7 @@ impl CharType {
 
 pub fn default_vcharprocs() -> Vec<CharType> {
     let vcp = Vec::new();
+    vcp.push(CharType::EscSeq);
     vcp.push(CharType::DelimSpace(' '));
     vcp.push(CharType::DelimString('"'));
     vcp.push(CharType::DelimBracket('(', ')'));

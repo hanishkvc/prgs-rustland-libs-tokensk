@@ -244,27 +244,10 @@ impl<'a> TStr<'a> {
     /// be trimmed out, when the subsequent/next token is requested.
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
-        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim);
+        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap);
         let vcharprocs = nexttoken::default_vcharprocs();
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
-            // Handle escape sequence, if we are in one
-            if ctxt.bescape {
-                //log_d(format!("DBUG:NextTok:In EscSeq:{}\n", ch));
-                if self.bExpandEscapeSequences {
-                    let replace = self.escSeqMap.get(&ch);
-                    if replace.is_none() {
-                        self.drop_adjust(chpos);
-                        return Err(format!("Tok:NextTok:Unknown escseq [{}]", ch));
-                    }
-                    //log_d(format!("DBUG:NextTok:EscSeq:{}:=:{:?}:\n", ch, replace));
-                    tok.push(*replace.unwrap())
-                } else {
-                    tok.push(ch);
-                }
-                bescape = false;
-                continue;
-            }
             // Handle space char,
             // also taking care of trimming it at the beginning, if requested
             if ch == ' ' {
@@ -303,12 +286,8 @@ impl<'a> TStr<'a> {
                 continue;
             }
             // Identify starting of a escape sequence
-            if ch == '\\' {
-                if bcheckstart {
-                    self.drop_adjust(chpos);
-                    return Err(format!("Tok:NextTok:EscChar at start"));
-                }
-                bescape = true;
+            if ctxt.ch == '\\' {
+                ctxt.bescape = true;
                 continue;
             }
             // Help handle a bracketed block, by identifying its boundries
