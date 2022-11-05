@@ -245,25 +245,11 @@ impl<'a> TStr<'a> {
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim);
+        let vcharprocs = nexttoken::default_vcharprocs();
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
-            //log_d(format!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos));
-            // Handle end phase wrt block type tokens,
-            // * remove spaces following a block token, if requested
-            // * remove any delimiter following a block token
-            if bendphase_block {
-                if (ch == ' ') && btrim {
-                    endphase_pos = chpos;
-                    continue;
-                }
-                if ch == dlimdef {
-                    break;
-                }
-                chpos = endphase_pos;
-                break;
-            }
             // Handle escape sequence, if we are in one
-            if bescape {
+            if ctxt.bescape {
                 //log_d(format!("DBUG:NextTok:In EscSeq:{}\n", ch));
                 if self.bExpandEscapeSequences {
                     let replace = self.escSeqMap.get(&ch);

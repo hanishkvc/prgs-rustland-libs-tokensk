@@ -24,7 +24,7 @@ pub(crate) struct Ctxt {
     /// The phase of tokenisation
     mphase: Phase,
     /// If we are in escape mode
-    bescape: bool,
+    pub bescape: bool,
     /// The token being constructed
     tok: String,
     /// The current char's byte position
@@ -58,13 +58,13 @@ impl Ctxt {
 }
 
 
-enum Action {
+pub enum Action {
     NextChar,
     ContinueChain,
     DoneBreak,
 }
 
-enum CharType {
+pub enum CharType {
     DelimSpace(char),
     DelimNormal(char),
     DelimString(char),
@@ -240,3 +240,11 @@ impl CharType {
 
 }
 
+pub fn default_vcharprocs() -> Vec<CharType> {
+    let vcp = Vec::new();
+    vcp.push(CharType::DelimSpace(' '));
+    vcp.push(CharType::DelimString('"'));
+    vcp.push(CharType::DelimBracket('(', ')'));
+    vcp.push(CharType::Normal);
+    return vcp;
+}
