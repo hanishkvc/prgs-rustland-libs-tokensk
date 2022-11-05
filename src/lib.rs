@@ -8,6 +8,8 @@ use std::fmt;
 
 
 pub mod util;
+mod nexttoken;
+
 
 #[allow(non_snake_case)]
 #[derive(Debug)]
@@ -237,19 +239,9 @@ impl<'a> TStr<'a> {
     /// be trimmed out, when the subsequent/next token is requested.
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
-        let vchars:Vec<(usize, char)> = self.theStr.char_indices().collect();
-        let mut cend = dlimdef;
-        let mut bbegin = true;
-        let mut bescape = false;
-        let mut bcheckstart;
-        let mut tok = String::new();
-        let mut chpos= 0;
-        let mut ch;
-        let mut bracketcnt = 0;
-        let mut bendphase_block = false;
-        let mut endphase_pos = 0;
-        for i in 0..vchars.len() {
-            (chpos, ch) = vchars[i];
+        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef);
+        for i in 0..ctxt.vchars.len() {
+            (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
             //log_d(format!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos));
             // Handle end phase wrt block type tokens,
             // * remove spaces following a block token, if requested
