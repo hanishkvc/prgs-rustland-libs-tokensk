@@ -189,64 +189,60 @@ impl CharType {
                 }
             },
             CharType::DelimBracket(bchk, echk) => {
-                match x.ch {
-                    bchk => {
-                        match x.mphase {
-                            Phase::Begin => {
-                                panic!("DBUG:Opening bracket at begining of token??? TODO: Need to return a Err");
-                            }
-                            Phase::BtwNormal => {
-                                x.mphase = Phase::BtwBracket(1);
-                                x.tok.push(x.ch);
-                                return Action::NextChar;
-                            }
-                            Phase::BtwString => {
-                                x.tok.push(x.ch);
-                                return Action::NextChar;
-                            }
-                            Phase::BtwBracket(cnt) => {
-                                x.mphase = Phase::BtwBracket(cnt+1);
-                                x.tok.push(x.ch);
-                                return Action::NextChar;
-                            }
-                            Phase::EndCleanup => {
-                                x.endpos = x.chpos;
-                                return Action::DoneBreak;
-                            }
+                if x.ch == bchk {
+                    match x.mphase {
+                        Phase::Begin => {
+                            panic!("DBUG:Opening bracket at begining of token??? TODO: Need to return a Err");
+                        }
+                        Phase::BtwNormal => {
+                            x.mphase = Phase::BtwBracket(1);
+                            x.tok.push(x.ch);
+                            return Action::NextChar;
+                        }
+                        Phase::BtwString => {
+                            x.tok.push(x.ch);
+                            return Action::NextChar;
+                        }
+                        Phase::BtwBracket(cnt) => {
+                            x.mphase = Phase::BtwBracket(cnt+1);
+                            x.tok.push(x.ch);
+                            return Action::NextChar;
+                        }
+                        Phase::EndCleanup => {
+                            x.endpos = x.chpos;
+                            return Action::DoneBreak;
                         }
                     }
-                    echk => {
-                        match x.mphase {
-                            Phase::Begin => {
-                                panic!("DBUG:Closing bracket at begining of token??? TODO: Need to return a Err");
-                            }
-                            Phase::BtwNormal => {
-                                panic!("DBUG:Closing bracket in the middle of normal token??? TODO: Need to return a Err");
-                            }
-                            Phase::BtwString => {
-                                x.tok.push(x.ch);
-                                return Action::NextChar;
-                            }
-                            Phase::BtwBracket(cnt) => {
-                                let cnt = cnt - 1;
-                                x.tok.push(x.ch);
-                                if cnt == 0 {
-                                    x.endpos = x.chpos;
-                                    x.mphase = Phase::EndCleanup;
-                                    return Action::NextChar;
-                                }
-                                x.mphase = Phase::BtwBracket(cnt);
-                                return Action::NextChar;
-                            }
-                            Phase::EndCleanup => {
+                } else if x.ch == echk {
+                    match x.mphase {
+                        Phase::Begin => {
+                            panic!("DBUG:Closing bracket at begining of token??? TODO: Need to return a Err");
+                        }
+                        Phase::BtwNormal => {
+                            panic!("DBUG:Closing bracket in the middle of normal token??? TODO: Need to return a Err");
+                        }
+                        Phase::BtwString => {
+                            x.tok.push(x.ch);
+                            return Action::NextChar;
+                        }
+                        Phase::BtwBracket(cnt) => {
+                            let cnt = cnt - 1;
+                            x.tok.push(x.ch);
+                            if cnt == 0 {
                                 x.endpos = x.chpos;
-                                return Action::DoneBreak;
+                                x.mphase = Phase::EndCleanup;
+                                return Action::NextChar;
                             }
+                            x.mphase = Phase::BtwBracket(cnt);
+                            return Action::NextChar;
+                        }
+                        Phase::EndCleanup => {
+                            x.endpos = x.chpos;
+                            return Action::DoneBreak;
                         }
                     }
-                    _ => {
-                        return Action::ContinueChain;
-                    }
+                } else {
+                    return Action::ContinueChain;
                 }
             },
             CharType::Normal => {
