@@ -191,7 +191,12 @@ impl<'a> TStr<'a> {
 impl<'a> TStr<'a> {
 
     ///
-    /// drop text till and including specified LastTokPos
+    /// Drop text till and including specified LastTokPos
+    ///
+    /// TODO:
+    /// This logic can lead to a partial char bytes wrt the 1st char
+    /// in the updated internal string slice, if the lastTokPos points
+    /// to a multibyte char.
     ///
     pub fn drop_adjust(&mut self, mut lasttokpos: usize) {
         lasttokpos += 1;
