@@ -69,7 +69,7 @@ pub enum Action {
 }
 
 pub enum CharType {
-    EscSeq,
+    EscSeq(char),
     DelimSpace(char),
     DelimNormal(char),
     DelimString(char),
@@ -81,9 +81,20 @@ impl CharType {
 
     pub fn process_char(&self, x: &mut Ctxt) -> Action {
         match *self {
-            CharType::EscSeq => {
+            CharType::EscSeq(chk) => {
                 if !x.bescape {
-                    return Action::ContinueChain;
+                    if x.ch != chk {
+                        return Action::ContinueChain;
+                    }
+                    match x.mphase {
+                        Phase::BtwNormal | Phase::BtwString | Phase::BtwBracket(_) => {
+                            x.bescape = true;
+                            return Action::NextChar;
+                        }
+                        _ => {
+                            return Action::ContinueChain;
+                        }
+                    }
                 }
                 let replace = x.esmap.get(&x.ch);
                 if replace.is_none() {
@@ -259,7 +270,7 @@ impl CharType {
 
 pub fn default_vcharprocs() -> Vec<CharType> {
     let vcp = Vec::new();
-    vcp.push(CharType::EscSeq);
+    vcp.push(CharType::EscSeq('\\'));
     vcp.push(CharType::DelimSpace(' '));
     vcp.push(CharType::DelimString('"'));
     vcp.push(CharType::DelimBracket('(', ')'));

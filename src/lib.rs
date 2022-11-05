@@ -285,11 +285,6 @@ impl<'a> TStr<'a> {
                 }
                 continue;
             }
-            // Identify starting of a escape sequence
-            if ctxt.ch == '\\' {
-                ctxt.bescape = true;
-                continue;
-            }
             // Help handle a bracketed block, by identifying its boundries
             if ch == self.charBracketBegin {
                 if bcheckstart && !self.bMainBracketStandalone {
