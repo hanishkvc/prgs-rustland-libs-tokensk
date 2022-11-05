@@ -213,8 +213,8 @@ impl<'a> TStr<'a> {
     /// any whitespace following the block type token.
     ///
     /// The block type tokens, which override the provided delimiter include
-    /// * double quoted string is treated as a single token
-    /// * () bracketed content is treated as a single token
+    /// * quoted string is treated as a single token (double quoted by default)
+    /// * bracketed content is treated as a single token ('(' and ')' by default)
     ///   * one can have brackets within brackets.
     ///   * however the starting opening bracket should be prefixed with some
     ///     alphanumeric text.
@@ -303,8 +303,8 @@ impl<'a> TStr<'a> {
             } else {
                 bcheckstart = false;
             }
-            // Help with handling double quoted strings
-            if ch == '"' {
+            // Help with handling quoted strings
+            if ch == self.charStringQuote {
                 if self.bIncludeStringQuotes || (ch != cend) {
                     tok.push(ch);
                 }
@@ -329,7 +329,7 @@ impl<'a> TStr<'a> {
                 continue;
             }
             // Help handle a bracketed block, by identifying its boundries
-            if ch == '(' {
+            if ch == self.charBracketBegin {
                 if bcheckstart && !self.bMainBracketStandalone {
                     self.drop_adjust(chpos);
                     return Err(format!("Tok:NextTok:( at start, without any prefix text"));
@@ -339,20 +339,20 @@ impl<'a> TStr<'a> {
                     return Err(format!("Tok:NextTok:1st/Main ( didnt start at begin"));
                 }
                 if cend == dlimdef {
-                    cend = ')';
+                    cend = self.charBracketEnd;
                 }
                 bracketcnt += 1;
                 tok.push(ch);
                 continue;
             }
-            if ch == ')' {
+            if ch == self.charBracketEnd {
                 if bcheckstart {
                     self.drop_adjust(chpos);
                     return Err(format!("Tok:NextTok:) at start"));
                 }
                 tok.push(ch);
                 bracketcnt -= 1;
-                if cend == ')' {
+                if cend == self.charBracketEnd {
                     if bracketcnt <= 0 {
                         bendphase_block = true;
                         endphase_pos = chpos;
