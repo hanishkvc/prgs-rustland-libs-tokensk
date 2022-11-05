@@ -6,7 +6,6 @@
 
 enum Phase {
     Begin,
-    CheckStart,
     BtwNormal,
     BtwString,
     /// Maintain current open brackets count
@@ -95,7 +94,6 @@ impl CharType {
                         }
                         return Action::DoneBreak;
                     }
-                    _ => todo!()
                 }
             },
             CharType::DelimNormal(chk) => {
@@ -104,6 +102,7 @@ impl CharType {
                 }
                 match x.mphase {
                     Phase::BtwString | Phase::BtwBracket(_) => {
+                        // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
                         x.tok.push(x.ch);
                         return Action::NextChar;
                     }
@@ -120,13 +119,50 @@ impl CharType {
                 if x.ch != chk {
                     return Action::ContinueChain;
                 }
-                todo!()
+                match x.mphase {
+                    Phase::Begin => {
+                        x.mphase = Phase::BtwString;
+                        x.tok.push(x.ch);
+                        return Action::NextChar;
+                    }
+                    Phase::BtwString => {
+                        x.mphase = Phase::EndCleanup(x.chpos);
+                        x.tok.push(x.ch);
+                        return Action::NextChar;
+                    }
+                    Phase::EndCleanup(endpos) => {
+                        
+                    }
+                    _ => {
+                        x.tok.push(x.ch);
+                        return Action::NextChar;
+                    }
+                }
             },
             CharType::DelimBracket(bchk, echk) => {
-                if (x.ch != bchk) && (x.ch != echk) {
-                    return Action::ContinueChain;
+                match x.ch {
+                    bchk => {
+                        match x.mphase {
+                            Phase::Begin => {
+                                x.mphase = Phase::BtwBracket(1);
+                                x.tok.push(x.ch);
+                                return Action::NextChar;
+                            }
+                            Phase::BtwBracket(cnt) => {
+                                x.mphase = Phase::BtwBracket(cnt+1);
+                                x.tok.push(x.ch);
+                                return Action::NextChar;
+                            }
+                            _ => 
+                        }
+                    }
+                    echk => {
+
+                    }
+                    _ => {
+                        return Action::ContinueChain;
+                    }
                 }
-                todo!()
             },
             CharType::Normal => {
                 x.tok.push(x.ch);
