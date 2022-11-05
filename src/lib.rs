@@ -19,6 +19,20 @@ pub mod util;
 /// The tokenisation characteristics can be adjusted using some
 /// of the members in it.
 ///
+/// The following token types are supported
+/// * simple tokens, each made up of Non space chars seperated by specified delimiter
+/// * block tokens, made up of tokens within them, these could include
+///   * quoted string block with spaces/escaped-delimiters/... in between, if required
+///     * uses the same char for begin and end of the block
+///   * bracketed content block
+///     * contains a seperate begin and end bracket char wrt the block
+///     * bracked content block can contain other bracketed content blocks
+///       within them, to what ever depth required.
+///     * The logic will try to match opening and its corresponding closing bracket,
+///       so that a valid block of text is returned as the token.
+///       If there is a string token within a bracketed block, containing the bracket
+///       chars, they should be escaped.
+///
 pub struct TStr<'a> {
     theStr: &'a str,
     /// The amount of space trimmed at the begining of the string
@@ -35,6 +49,12 @@ pub struct TStr<'a> {
     escSeqMap: HashMap<char, char>,
     /// If a bracket based token should have some textual prefix wrt the 1st opening bracket
     pub bMainBracketStandalone: bool,
+    /// If you want to use a custom bracket begin char, set it here
+    pub charBracketBegin: char,
+    /// If you want to use a custom bracket end char, set it here
+    pub charBracketEnd: char,
+    /// The char used to demarcate/enclose multi word string token
+    pub charStringQuote: char,
 }
 
 
@@ -51,6 +71,9 @@ impl<'a> TStr<'a> {
             bExpandEscapeSequences: true,
             escSeqMap: HashMap::new(),
             bMainBracketStandalone: false,
+            charBracketBegin: '(',
+            charBracketEnd: ')',
+            charStringQuote: '"',
         }
     }
 
@@ -85,12 +108,17 @@ impl<'a> TStr<'a> {
         self.escSeqMap.insert(find, replace);
     }
 
-    /// Setup a set of predefined / common escape sequences
+    /// Setup a set of predefined / common / useful escape sequences.
+    /// Sets up the currently configured StringQuote and Bracket chars,
+    /// as part of the escape sequencing, so that user can escape them
+    /// if required as part of string literals, etal.
     pub fn escseq_defaults(&mut self) {
         self.escSeqMap.insert('n', '\n');
         self.escSeqMap.insert('t', '\t');
         self.escSeqMap.insert('r', '\r');
-        self.escSeqMap.insert('"', '"');
+        self.escSeqMap.insert(self.charStringQuote, self.charStringQuote);
+        self.escSeqMap.insert(self.charBracketBegin, self.charBracketBegin);
+        self.escSeqMap.insert(self.charBracketEnd, self.charBracketEnd);
     }
 
 }
