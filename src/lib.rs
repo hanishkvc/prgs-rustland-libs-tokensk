@@ -239,7 +239,7 @@ impl<'a> TStr<'a> {
     /// be trimmed out, when the subsequent/next token is requested.
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
-        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef);
+        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim);
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
             //log_d(format!("DBUG:NextTok:Char[Pos]:[{}][{}][{}]\n", ch, ch as usize, chpos));
