@@ -13,7 +13,6 @@ enum Phase {
     BtwBracket(usize),
     /// Maintain current tok's end position in source string
     EndCleanup(usize),
-    End,
 }
 
 pub(crate) struct Ctxt {
@@ -72,33 +71,57 @@ impl CharType {
                 match x.mphase {
                     Phase::Begin => {
                         if x.btrim {
-                            return Action::ContinueChain;
+                            return Action::NextChar;
                         }
                         x.tok.push(x.ch);
-                        return Action::ContinueChain;
+                        return Action::NextChar;
                     }
-                    Phase::BtwNormal | Phase::BtwString | Phase::BtwBracket(_) => {
+                    Phase::BtwNormal => {
+                        if chk == x.cend {
+                            return Action::DoneBreak;
+                        }
                         x.tok.push(x.ch);
-                        return Action::ContinueChain;
+                        return Action::NextChar;
+                    }
+                    Phase::BtwString | Phase::BtwBracket(_) => {
+                        // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
+                        x.tok.push(x.ch);
+                        return Action::NextChar;
                     }
                     Phase::EndCleanup(_) => {
                         if x.btrim {
                             x.mphase = Phase::EndCleanup(x.chpos);
                             return Action::NextChar;
                         }
-                        return Action::ContinueChain;
+                        return Action::DoneBreak;
                     }
-                    Phase::End => {
-                        return 
-                    }
-
                     _ => todo!()
                 }
-                Action::ContinueChain
             },
-            CharType::DelimString(chk) => todo!(),
-            CharType::DelimBracket(bchk, echk) => todo!(),
+            CharType::DelimNormal(chk) => {
+                if x.ch != chk {
+                    return Action::ContinueChain;
+                }
+                todo!()
+            }
+            CharType::DelimString(chk) => {
+                if x.ch != chk {
+                    return Action::ContinueChain;
+                }
+                todo!()
+            },
+            CharType::DelimBracket(bchk, echk) => {
+                if (x.ch != bchk) && (x.ch != echk) {
+                    return Action::ContinueChain;
+                }
+                todo!()
+            },
+            CharType::Normal => {
+                x.tok.push(x.ch);
+                return Action::NextChar;
+            },
         }
     }
+
 }
 
