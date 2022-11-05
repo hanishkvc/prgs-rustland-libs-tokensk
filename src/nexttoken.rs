@@ -102,7 +102,19 @@ impl CharType {
                 if x.ch != chk {
                     return Action::ContinueChain;
                 }
-                todo!()
+                match x.mphase {
+                    Phase::BtwString | Phase::BtwBracket(_) => {
+                        x.tok.push(x.ch);
+                        return Action::NextChar;
+                    }
+                    _ => {
+                        if chk == x.cend {
+                            return Action::DoneBreak;
+                        }
+                        x.tok.push(x.ch);
+                        return Action::NextChar;
+                    }
+                }
             }
             CharType::DelimString(chk) => {
                 if x.ch != chk {
