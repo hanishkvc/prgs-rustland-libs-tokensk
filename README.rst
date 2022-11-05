@@ -1,12 +1,12 @@
 ##########
-tokensk
+ tokensk
 ##########
 
 Author: hanishkvc
 Version: v20221104IST1511
 
 Overview
-###########
+##########
 
 A simple tokeniser library written in rust, which allows one to extract the individual tokens
 from a given string.
@@ -57,7 +57,7 @@ Usage
 
 Look at the documentation in the source, as well as the sample test app and testlib for more info.
 
-A code sample::
+.. code-block:: rust
 
    #
    # Get tokens one at a time
@@ -89,7 +89,7 @@ A code sample::
    #
    # Get first, nth and last chars
    #
-   let tstr = TStr::from_str("0123456789 Test extracting chars ॐ"");
+   let tstr = TStr::from_str("0123456789 Test extracting chars ॐ");
    print!("TEST:FirstNthLast:{},{},{}",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
 
 
