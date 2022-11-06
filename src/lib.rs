@@ -259,9 +259,9 @@ impl<'a> TStr<'a> {
             }
         }
         if !bdone {
-            ctxt.endpos += 1;
+            ctxt.chpos += 1;
         }
-        self.drop_adjust(ctxt.endpos);
+        self.drop_adjust(ctxt.chpos);
         // trim spaces that can be at the end, wrt non block token,
         // when a non space dlimdef is used
         if btrim {
