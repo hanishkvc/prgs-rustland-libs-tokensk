@@ -12,6 +12,8 @@ enum Phase {
     BtwString,
     /// Maintain current open brackets count
     BtwBracket(usize),
+    /// Seek delimiter, by dropping any spaces
+    EndSeekDelim,
     /// Peek ahead to see and handle any trimmable spaces
     EndCleanup,
 }
@@ -168,6 +170,17 @@ impl CharType {
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
+                    Phase::EndSeekDelim => {
+                        x.nextpos = x.chpos;
+                        if chk == x.cend {
+                            x.mphase = Phase::EndCleanup;
+                            return Ok(Action::NextChar);
+                        }
+                        if !x.f.trim {
+                            x.tok.push(x.ch);
+                        }
+                        return Ok(Action::NextChar);
+                    }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
                         if x.f.trim {
@@ -186,6 +199,14 @@ impl CharType {
                         // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
+                    }
+                    Phase::EndSeekDelim => {
+                        x.nextpos = x.chpos;
+                        if chk == x.cend {
+                            x.mphase = Phase::EndCleanup;
+                            return Ok(Action::NextChar);
+                        }
+                        return Err(format!("DBUG:CharType:DelimNormal:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
@@ -216,7 +237,7 @@ impl CharType {
                     }
                     Phase::BtwString => {
                         if x.f.blocktok_dlimuser_endreqd {
-                            x.mphase = Phase::BtwNormal;
+                            x.mphase = Phase::EndSeekDelim;
                         } else {
                             x.mphase = Phase::EndCleanup;
                         }
@@ -225,6 +246,10 @@ impl CharType {
                             x.tok.push(x.ch);
                         }
                         return Ok(Action::NextChar);
+                    }
+                    Phase::EndSeekDelim => {
+                        x.nextpos = x.chpos;
+                        return Err(format!("DBUG:CharType:DelimString:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
@@ -264,6 +289,10 @@ impl CharType {
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
+                        Phase::EndSeekDelim => {
+                            x.nextpos = x.chpos;
+                            return Err(format!("DBUG:CharType:DelimBracket:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
+                        }
                         Phase::EndCleanup => {
                             x.nextpos = x.chpos;
                             return Ok(Action::DoneBreak);
@@ -287,7 +316,7 @@ impl CharType {
                             if cnt == 0 {
                                 x.nextpos = x.chpos;
                                 if x.f.blocktok_dlimuser_endreqd {
-                                    x.mphase = Phase::BtwNormal;
+                                    x.mphase = Phase::EndSeekDelim;
                                 } else {
                                     x.mphase = Phase::EndCleanup;
                                 }
@@ -295,6 +324,10 @@ impl CharType {
                             }
                             x.mphase = Phase::BtwBracket(cnt);
                             return Ok(Action::NextChar);
+                        }
+                        Phase::EndSeekDelim => {
+                            x.nextpos = x.chpos;
+                            return Err(format!("DBUG:CharType:DelimBracket:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
                         }
                         Phase::EndCleanup => {
                             x.nextpos = x.chpos;
@@ -309,6 +342,10 @@ impl CharType {
                 match x.mphase {
                     Phase::Begin => {
                         x.mphase = Phase::BtwNormal;
+                    }
+                    Phase::EndSeekDelim => {
+                        x.nextpos = x.chpos;
+                        return Err(format!("DBUG:CharType:Normal:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
