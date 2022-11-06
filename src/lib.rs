@@ -41,12 +41,6 @@ pub struct TStr<'a> {
     trimmedPrefixCnt: isize,
     /// The amount of space trimmed at the end of the string
     trimmedSuffixCnt: isize,
-    /// Should the double quote protecting a string should be retained
-    /// in the returned string wrt nexttok or not.
-    pub bIncludeStringQuotes: bool,
-    /// Should any escape sequences found during tokenising should be
-    /// processed/expanded into the special/non special char represented by them.
-    pub bExpandEscapeSequences: bool,
     /// Maintain the set of supported escape sequences and the underlying expanded char.
     escSeqMap: HashMap<char, char>,
     /// If a bracket based token should have some textual prefix wrt the 1st opening bracket
@@ -69,8 +63,6 @@ impl<'a> TStr<'a> {
             theStr: s,
             trimmedPrefixCnt: -1,
             trimmedSuffixCnt: -1,
-            bIncludeStringQuotes: true,
-            bExpandEscapeSequences: true,
             escSeqMap: HashMap::new(),
             bMainBracketStandalone: false,
             charBracketBegin: '(',

@@ -22,8 +22,6 @@ pub fn test_create() {
         theStr: "A direct string string",
         trimmedPrefixCnt: 0,
         trimmedSuffixCnt: 0,
-        bIncludeStringQuotes: true,
-        bExpandEscapeSequences: true,
         escSeqMap: HashMap::new(),
         bMainBracketStandalone: false,
         charBracketBegin: '(',

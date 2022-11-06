@@ -22,6 +22,12 @@ struct Flags {
     /// Do block tokens require user specified delim at end
     /// or is block token specific end delimiter good enough
     blocktok_dlimdef_endreqd: bool,
+    /// Should the double quote protecting a string should be retained
+    /// in the returned string wrt nexttok or not.
+    pub stringquotes_retain: bool,
+    /// Should any escape sequences found during tokenising should be
+    /// processed/expanded into the special/non special char represented by them.
+    pub escapesequences_expand: bool,
 }
 
 pub struct Ctxt {
@@ -62,7 +68,7 @@ impl Ctxt {
             ch: ' ',
             nextpos: 0,
             esmap: esmap,
-            f: Flags { trim: btrim, blocktok_dlimdef_endreqd: true }
+            f: Flags { trim: btrim, blocktok_dlimdef_endreqd: true, stringquotes_retain: true, escapesequences_expand: true }
         }
     }
 
