@@ -231,6 +231,7 @@ impl<'a> TStr<'a> {
         let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
+            ctxt.ipos = i;
             for vct in &vchartypes {
                 let act = vct.process_char(&mut ctxt);
                 if act.is_err() {

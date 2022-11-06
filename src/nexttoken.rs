@@ -48,6 +48,8 @@ pub struct Ctxt {
     pub bescape: bool,
     /// The token being constructed
     pub tok: String,
+    /// The current char's index/position
+    pub ipos: usize,
     /// The current char's byte position
     pub chpos: usize,
     /// The current char
@@ -70,6 +72,7 @@ impl Ctxt {
             mphase: Phase::Begin,
             bescape: false,
             tok: String::new(),
+            ipos: 0,
             chpos: 0,
             ch: ' ',
             nextpos: 0,
@@ -138,7 +141,7 @@ impl CharType {
                 } else {
                     let replace = x.esmap.get(&x.ch);
                     if replace.is_none() {
-                        return Err(format!("CharType:ProcessChar:Unknown escseq [{}]", x.ch));
+                        return Err(format!("CharType:ProcessChar:Unknown escseq [{}] @ {}", x.ch, x.ipos));
                     }
                     x.tok.push(*replace.unwrap());
                 }
@@ -206,7 +209,7 @@ impl CharType {
                             x.mphase = Phase::EndCleanup;
                             return Ok(Action::NextChar);
                         }
-                        return Err(format!("DBUG:CharType:DelimNormal:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
+                        return Err(format!("DBUG:CharType:DelimNormal:ProcessChar:EndSeekingDeLim:Non delim char [{}] @ {}", x.ch, x.ipos));
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
@@ -249,7 +252,7 @@ impl CharType {
                     }
                     Phase::EndSeekDelim => {
                         x.nextpos = x.chpos;
-                        return Err(format!("DBUG:CharType:DelimString:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
+                        return Err(format!("DBUG:CharType:DelimString:ProcessChar:EndSeekingDeLim:Non delim char [{}] @ {}", x.ch, x.ipos));
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
@@ -266,7 +269,7 @@ impl CharType {
                     match x.mphase {
                         Phase::Begin => {
                             if !x.f.mainbracket_beginstandalone {
-                                return Err(format!("CharType:ProcessChar:Opening bracket [{}] at begining of token???", bchk));
+                                return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} at begining of token???", bchk, x.ipos));
                             }
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
@@ -274,7 +277,7 @@ impl CharType {
                         }
                         Phase::BtwNormal => {
                             if x.f.mainbracket_beginstandalone {
-                                return Err(format!("CharType:ProcessChar:Opening bracket [{}] not at begining of token???", bchk));
+                                return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} not at begining of token???", bchk, x.ipos));
                             }
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
@@ -291,7 +294,7 @@ impl CharType {
                         }
                         Phase::EndSeekDelim => {
                             x.nextpos = x.chpos;
-                            return Err(format!("DBUG:CharType:DelimBracket:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
+                            return Err(format!("DBUG:CharType:DelimBracket:ProcessChar:EndSeekingDeLim:Non delim char [{}] @ {}", x.ch, x.ipos));
                         }
                         Phase::EndCleanup => {
                             x.nextpos = x.chpos;
@@ -301,10 +304,10 @@ impl CharType {
                 } else if x.ch == echk {
                     match x.mphase {
                         Phase::Begin => {
-                            return Err(format!("CharType:ProcessChar:Closing bracket [{}] at begining of token???", echk));
+                            return Err(format!("CharType:ProcessChar:Closing bracket [{}] @ {} at begining of token???", echk, x.ipos));
                         }
                         Phase::BtwNormal => {
-                            return Err(format!("CharType:ProcessChar:Closing bracket [{}] at middle of normal token???", echk));
+                            return Err(format!("CharType:ProcessChar:Closing bracket [{}] @ {} at middle of normal token???", echk, x.ipos));
                         }
                         Phase::BtwString => {
                             x.tok.push(x.ch);
@@ -327,7 +330,7 @@ impl CharType {
                         }
                         Phase::EndSeekDelim => {
                             x.nextpos = x.chpos;
-                            return Err(format!("DBUG:CharType:DelimBracket:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
+                            return Err(format!("DBUG:CharType:DelimBracket:ProcessChar:EndSeekingDeLim:Non delim char [{}] @ {}", x.ch, x.ipos));
                         }
                         Phase::EndCleanup => {
                             x.nextpos = x.chpos;
@@ -345,7 +348,7 @@ impl CharType {
                     }
                     Phase::EndSeekDelim => {
                         x.nextpos = x.chpos;
-                        return Err(format!("DBUG:CharType:Normal:ProcessChar:EndSeekingDeLim:Non delim char [{}]", x.ch));
+                        return Err(format!("DBUG:CharType:Normal:ProcessChar:EndSeekingDeLim:Non delim char [{}] @ {}", x.ch, x.ipos));
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
