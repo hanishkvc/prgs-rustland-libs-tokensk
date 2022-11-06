@@ -12,7 +12,7 @@ mod nexttoken;
 
 
 #[allow(non_snake_case)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 ///
 /// Tokenisable String - created from a passed string slice
 /// * using from_str when creating a new instance
@@ -396,6 +396,21 @@ impl<'a> TStr<'a> {
         return Ok(prefixplus.0.to_string());
     }
 
+    ///
+    /// Update this TStr instance to contain the string without its enclosing
+    /// string delimiter.
+    ///
+    pub fn peel_string(&mut self, stringdelim: char) -> Result<(), String> {
+        self.trim();
+        let schar = self.char_first().unwrap();
+        let echar = self.char_last().unwrap();
+        if (schar != stringdelim) || (echar != stringdelim) {
+            return Err(format!("TStr:PeelString:{}:Not used to enclose the string fully", stringdelim));
+        }
+        self.theStr = &self.theStr[1..self.len()-1];
+        Ok(())
+    }
+
 }
 
 
@@ -417,8 +432,9 @@ mod tests {
     }
 
     #[test]
-    fn test_peel_bracket() {
+    fn test_peel() {
         testlib::test_peel_bracket();
+        testlib::test_peel_string();
     }
 
     #[test]

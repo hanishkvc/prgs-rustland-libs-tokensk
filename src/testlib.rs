@@ -107,9 +107,29 @@ pub fn test_peel_bracket() {
     print!("TEST:PeelBracket:prefix[{}], contents[{}]\n", prefix, tstr.the_str());
 }
 
+pub fn test_peel_string() {
+    let delim = '"';
+    let tstr = TStr::from_str("   \"A string with double quote at one end  ");
+    let mut rstr = tstr.clone();
+    let gotr = rstr.peel_string(delim);
+    if gotr.is_err() {
+        print!("TEST:PeelString:[{}]:StringDelim:{}:Expected Failure:{}\n", tstr, delim, gotr.unwrap_err());
+    } else {
+        print!("DBUG:PeelString:[{}]:StringDelim:{}:Unexpected Success:{}\n", tstr, delim, rstr);
+    }
+    let tstr = TStr::from_str("              \"A string with double quote at one end\"  ");
+    let mut rstr = tstr.clone();
+    let gotr = rstr.peel_string(delim);
+    if gotr.is_err() {
+        print!("TEST:PeelString:[{}]:StringDelim:{}:Unexpected Failure:{}\n", tstr, delim, gotr.unwrap_err());
+    } else {
+        print!("DBUG:PeelString:[{}]:StringDelim:{}:Expected Success:{}\n", tstr, delim, rstr);
+    }
+}
+
 pub fn test_first_nth_last() {
     let tstr = TStr::from_str("0123456789 Test extracting chars ॐ");
-    print!("TEST:FirstNthLast:{},{},{}",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
+    print!("TEST:FirstNthLast:{},{},{}\n",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
 }
 
 pub fn test_splitn_ex(instr: &str, splitn: usize, dlimdef: char) {
