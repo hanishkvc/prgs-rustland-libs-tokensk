@@ -217,7 +217,8 @@ impl<'a> TStr<'a> {
     /// If any error identified while scanning for the token, a error message
     /// is returned to the caller, while parallley dropping the token with error,
     /// so that next call to this will potentially retrieve a valid token, if any
-    /// still in the string/line.
+    /// still in the string/line. The partial dropped token is also returned, as
+    /// part of a tuple, along with the err message. ie (ErrMsg, PartialTok).
     ///
     /// If a escape sequence is found anywhere other than begining of the token,
     /// it will be processed/expanded, if requested.
@@ -225,7 +226,7 @@ impl<'a> TStr<'a> {
     /// If user requests trimming, then any spaces before and after the token
     /// will be trimmed out.
     ///
-    pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
+    pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, (String, String)> {
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap.clone());
         let vchartypes = nexttoken::vchartypes_default_with(self.charStringQuote, self.charBracketBegin, self.charBracketEnd, Some(dlimdef));
         let mut bdone = false;
@@ -243,7 +244,7 @@ impl<'a> TStr<'a> {
                         nexttokpos = self.theStr.len();
                     }
                     self.drop_adjust(nexttokpos);
-                    return Err(format!("NextTok:{}", act.unwrap_err()))
+                    return Err((format!("TStr:NextTok:{}", act.unwrap_err()), ctxt.tok.to_string()))
                 }
                 match act.unwrap() {
                     nexttoken::Action::NextChar => break,
@@ -296,7 +297,7 @@ impl<'a> TStr<'a> {
         while self.remaining_len() > 0 {
             let gottok = self.nexttok(dlimdef, btrim);
             if gottok.is_err() && !bcontinue_onerr {
-                return Err(format!("TokensVec:{}", gottok.unwrap_err()));
+                return Err(format!("TStr:TokensVec:{:?}", gottok.unwrap_err()));
             }
             if gottok.is_ok() {
                 vtoks.push(gottok.unwrap());
@@ -322,7 +323,7 @@ impl<'a> TStr<'a> {
     pub fn split_once(&mut self, dlimdef: char) -> Result<(String, String), String> {
         let gottok = self.nexttok(dlimdef, true);
         if gottok.is_err() {
-            return Err(gottok.unwrap_err());
+            return Err(format!("TStr:SplitOnce:{:?}",gottok.unwrap_err()));
         }
         return Ok((gottok.unwrap(), self.the_str().to_string()));
     }
@@ -341,7 +342,7 @@ impl<'a> TStr<'a> {
         for _i in 1..reqcnt {
             let tok = self.nexttok(dlimdef, true);
             if tok.is_err() {
-                return Err(format!("TStr:SplitN:{}", tok.unwrap_err()));
+                return Err(format!("TStr:SplitN:{:?}", tok.unwrap_err()));
             }
             vres.push(tok.unwrap());
             if self.remaining_len() == 0 {

@@ -63,7 +63,7 @@ pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
         while tline.remaining_len() > 0 {
             let gottok = tline.nexttok(dlimdef, true);
             if gottok.is_err() {
-                print!("ERRR:{}:{}\n", mtag, gottok.unwrap_err());
+                print!("ERRR:{}:{:?}\n", mtag, gottok.unwrap_err());
             } else {
                 let gottok = gottok.unwrap();
                 print!("\ttok[{}]; rem[{}]\n", gottok, tline.the_str());
