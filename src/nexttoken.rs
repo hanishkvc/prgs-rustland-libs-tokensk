@@ -12,9 +12,16 @@ enum Phase {
     BtwString,
     /// Maintain current open brackets count
     BtwBracket(usize),
-    /// MaybeGoBackTo: Maintain current tok's end position in source string
-    /// Peek ahead to see, if there is any trimmable spaces
+    /// Peek ahead to see and handle any trimmable spaces
     EndCleanup,
+}
+
+struct Flags {
+    /// If spaces should be trimmed
+    trim: bool,
+    /// Do block tokens require user specified delim at end
+    /// or is block token specific end delimiter good enough
+    blocktok_dlimdef_endreqd: bool,
 }
 
 pub struct Ctxt {
@@ -34,11 +41,11 @@ pub struct Ctxt {
     pub chpos: usize,
     /// The current char
     pub ch: char,
-    /// If spaces should be trimmed
-    btrim: bool,
     /// The byte position to start searching for next token
     pub nextpos: usize,
+    /// The map of enabled escape sequences
     esmap: HashMap<char, char>,
+    f: Flags,
 }
 
 impl Ctxt {
@@ -53,9 +60,9 @@ impl Ctxt {
             tok: String::new(),
             chpos: 0,
             ch: ' ',
-            btrim: btrim,
             nextpos: 0,
             esmap: esmap,
+            f: Flags { trim: btrim, blocktok_dlimdef_endreqd: true }
         }
     }
 
@@ -117,7 +124,7 @@ impl CharType {
                 }
                 match x.mphase {
                     Phase::Begin => {
-                        if x.btrim {
+                        if x.f.trim {
                             return Ok(Action::NextChar);
                         }
                         x.tok.push(x.ch);
@@ -139,7 +146,7 @@ impl CharType {
                     }
                     Phase::EndCleanup => {
                         x.nextpos = x.chpos;
-                        if x.btrim {
+                        if x.f.trim {
                             return Ok(Action::NextChar);
                         }
                         return Ok(Action::DoneBreak);
@@ -182,7 +189,11 @@ impl CharType {
                         return Ok(Action::NextChar);
                     }
                     Phase::BtwString => {
-                        x.mphase = Phase::EndCleanup;
+                        if x.f.blocktok_dlimdef_endreqd {
+                            x.mphase = Phase::BtwNormal;
+                        } else {
+                            x.mphase = Phase::EndCleanup;
+                        }
                         x.nextpos = x.chpos;
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
@@ -239,7 +250,11 @@ impl CharType {
                             x.tok.push(x.ch);
                             if cnt == 0 {
                                 x.nextpos = x.chpos;
-                                x.mphase = Phase::EndCleanup;
+                                if x.f.blocktok_dlimdef_endreqd {
+                                    x.mphase = Phase::BtwNormal;
+                                } else {
+                                    x.mphase = Phase::EndCleanup;
+                                }
                                 return Ok(Action::NextChar);
                             }
                             x.mphase = Phase::BtwBracket(cnt);
