@@ -273,12 +273,12 @@ impl CharType {
 
 }
 
-pub fn default_vcharprocs() -> Vec<CharType> {
-    let mut vcp = Vec::new();
-    vcp.push(CharType::EscSeq('\\'));
-    vcp.push(CharType::DelimSpace(' '));
-    vcp.push(CharType::DelimString('"'));
-    vcp.push(CharType::DelimBracket('(', ')'));
-    vcp.push(CharType::Normal);
-    return vcp;
+pub fn vchartypes_default() -> Vec<CharType> {
+    let mut vct = Vec::new();
+    vct.push(CharType::EscSeq('\\'));
+    vct.push(CharType::DelimSpace(' '));
+    vct.push(CharType::DelimString('"'));
+    vct.push(CharType::DelimBracket('(', ')'));
+    vct.push(CharType::Normal);
+    return vct;
 }
