@@ -191,13 +191,13 @@ impl<'a> TStr<'a> {
 impl<'a> TStr<'a> {
 
     ///
-    /// Drop text till specified LastTokPos
+    /// Drop text till specified NextTokPos
     ///
-    pub fn drop_adjust(&mut self, lasttokpos: usize) {
-        if lasttokpos >= self.theStr.len() {
+    pub fn drop_adjust(&mut self, nexttokpos: usize) {
+        if nexttokpos >= self.theStr.len() {
             self.theStr = &"";
         } else {
-            self.theStr = &self.theStr[lasttokpos..];
+            self.theStr = &self.theStr[nexttokpos..];
         }
     }
 

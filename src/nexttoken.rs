@@ -36,8 +36,8 @@ pub struct Ctxt {
     pub ch: char,
     /// If spaces should be trimmed
     btrim: bool,
-    /// The byte position of previous to be extracted+trimmed set, wrt current token
-    pub chposprev: usize,
+    /// The byte position to start searching for next token
+    pub nextpos: usize,
     esmap: HashMap<char, char>,
 }
 
@@ -54,7 +54,7 @@ impl Ctxt {
             chpos: 0,
             ch: ' ',
             btrim: btrim,
-            chposprev: 0,
+            nextpos: 0,
             esmap: esmap,
         }
     }
@@ -81,6 +81,11 @@ pub enum CharType {
 
 impl CharType {
 
+    ///
+    /// DevNote: nextpos contains the position of last char to consume wrt current tok,
+    /// till the logic executes a Action::DoneBreak from within Phase::EndCleanup,
+    /// at which point it points to the begining of the next token roughly.
+    ///
     pub fn process_char(&self, x: &mut Ctxt) -> Result<Action, String> {
         match *self {
             CharType::EscSeq(chk) => {
@@ -120,7 +125,7 @@ impl CharType {
                     }
                     Phase::BtwNormal => {
                         if chk == x.cend {
-                            x.chposprev = x.chpos;
+                            x.nextpos = x.chpos;
                             x.mphase = Phase::EndCleanup;
                             return Ok(Action::NextChar);
                         }
@@ -133,11 +138,10 @@ impl CharType {
                         return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
+                        x.nextpos = x.chpos;
                         if x.btrim {
-                            x.chposprev = x.chpos;
                             return Ok(Action::NextChar);
                         }
-                        x.chpos = x.chposprev;
                         return Ok(Action::DoneBreak);
                     }
                 }
@@ -153,12 +157,12 @@ impl CharType {
                         return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
-                        x.chpos = x.chposprev;
+                        x.nextpos = x.chpos;
                         return Ok(Action::DoneBreak);
                     }
                     _ => {
                         if chk == x.cend {
-                            x.chposprev = x.chpos;
+                            x.nextpos = x.chpos;
                             x.mphase = Phase::EndCleanup;
                             return Ok(Action::NextChar);
                         }
@@ -179,12 +183,12 @@ impl CharType {
                     }
                     Phase::BtwString => {
                         x.mphase = Phase::EndCleanup;
-                        x.chposprev = x.chpos;
+                        x.nextpos = x.chpos;
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
-                        x.chpos = x.chposprev;
+                        x.nextpos = x.chpos;
                         return Ok(Action::DoneBreak);
                     }
                     _ => {
@@ -214,7 +218,7 @@ impl CharType {
                             return Ok(Action::NextChar);
                         }
                         Phase::EndCleanup => {
-                            x.chpos = x.chposprev;
+                            x.nextpos = x.chpos;
                             return Ok(Action::DoneBreak);
                         }
                     }
@@ -234,7 +238,7 @@ impl CharType {
                             let cnt = cnt - 1;
                             x.tok.push(x.ch);
                             if cnt == 0 {
-                                x.chposprev = x.chpos;
+                                x.nextpos = x.chpos;
                                 x.mphase = Phase::EndCleanup;
                                 return Ok(Action::NextChar);
                             }
@@ -242,7 +246,7 @@ impl CharType {
                             return Ok(Action::NextChar);
                         }
                         Phase::EndCleanup => {
-                            x.chpos = x.chposprev;
+                            x.nextpos = x.chpos;
                             return Ok(Action::DoneBreak);
                         }
                     }
@@ -256,7 +260,7 @@ impl CharType {
                         x.mphase = Phase::BtwNormal;
                     }
                     Phase::EndCleanup => {
-                        x.chpos = x.chposprev;
+                        x.nextpos = x.chpos;
                         return Ok(Action::DoneBreak);
                     }
                     _ => ()
