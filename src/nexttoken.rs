@@ -54,6 +54,7 @@ pub struct Ctxt {
     pub nextpos: usize,
     /// The map of enabled escape sequences
     esmap: HashMap<char, char>,
+    /// Helps control the behaviour of tokenising
     f: Flags,
 }
 
