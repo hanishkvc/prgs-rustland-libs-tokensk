@@ -191,7 +191,9 @@ impl CharType {
                 match x.mphase {
                     Phase::Begin => {
                         x.mphase = Phase::BtwString;
-                        x.tok.push(x.ch);
+                        if x.f.stringquotes_retain {
+                            x.tok.push(x.ch);
+                        }
                         return Ok(Action::NextChar);
                     }
                     Phase::BtwString => {
@@ -201,7 +203,9 @@ impl CharType {
                             x.mphase = Phase::EndCleanup;
                         }
                         x.nextpos = x.chpos;
-                        x.tok.push(x.ch);
+                        if x.f.stringquotes_retain {
+                            x.tok.push(x.ch);
+                        }
                         return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
