@@ -108,7 +108,11 @@ impl CharType {
                     }
                     match x.mphase {
                         Phase::BtwNormal | Phase::BtwString | Phase::BtwBracket(_) => {
-                            x.bescape = true;
+                            if x.f.escapesequences_expand {
+                                x.bescape = true;
+                            } else {
+                                x.tok.push(x.ch);
+                            }
                             return Ok(Action::NextChar);
                         }
                         _ => {
@@ -116,12 +120,16 @@ impl CharType {
                         }
                     }
                 }
-                let replace = x.esmap.get(&x.ch);
-                if replace.is_none() {
-                    return Err(format!("CharType:ProcessChar:Unknown escseq [{}]", x.ch));
-                }
-                x.tok.push(*replace.unwrap());
                 x.bescape = false;
+                if !x.f.escapesequences_expand {
+                    x.tok.push(x.ch);
+                } else {
+                    let replace = x.esmap.get(&x.ch);
+                    if replace.is_none() {
+                        return Err(format!("CharType:ProcessChar:Unknown escseq [{}]", x.ch));
+                    }
+                    x.tok.push(*replace.unwrap());
+                }
                 return Ok(Action::NextChar);
             }
             CharType::DelimSpace(chk) => {
