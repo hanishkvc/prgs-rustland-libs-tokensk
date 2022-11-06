@@ -28,6 +28,9 @@ struct Flags {
     /// Should any escape sequences found during tokenising should be
     /// processed/expanded into the special/non special char represented by them.
     pub escapesequences_expand: bool,
+    /// If a bracket based token should have some textual prefix wrt
+    /// the 1st opening bracket or not
+    pub mainbracket_beginstandalone: bool,
 }
 
 pub struct Ctxt {
@@ -68,7 +71,13 @@ impl Ctxt {
             ch: ' ',
             nextpos: 0,
             esmap: esmap,
-            f: Flags { trim: btrim, blocktok_dlimdef_endreqd: true, stringquotes_retain: true, escapesequences_expand: true }
+            f: Flags {
+                trim: btrim,
+                blocktok_dlimdef_endreqd: true,
+                stringquotes_retain: true,
+                escapesequences_expand: true,
+                mainbracket_beginstandalone: false,
+            }
         }
     }
 
@@ -230,9 +239,17 @@ impl CharType {
                 if x.ch == bchk {
                     match x.mphase {
                         Phase::Begin => {
-                            return Err(format!("CharType:ProcessChar:Opening bracket [{}] at begining of token???", bchk));
+                            if !x.f.mainbracket_beginstandalone {
+                                return Err(format!("CharType:ProcessChar:Opening bracket [{}] at begining of token???", bchk));
+                            }
+                            x.mphase = Phase::BtwBracket(1);
+                            x.tok.push(x.ch);
+                            return Ok(Action::NextChar);
                         }
                         Phase::BtwNormal => {
+                            if x.f.mainbracket_beginstandalone {
+                                return Err(format!("CharType:ProcessChar:Opening bracket [{}] not at begining of token???", bchk));
+                            }
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);

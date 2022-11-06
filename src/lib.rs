@@ -43,8 +43,6 @@ pub struct TStr<'a> {
     trimmedSuffixCnt: isize,
     /// Maintain the set of supported escape sequences and the underlying expanded char.
     escSeqMap: HashMap<char, char>,
-    /// If a bracket based token should have some textual prefix wrt the 1st opening bracket
-    pub bMainBracketStandalone: bool,
     /// If you want to use a custom bracket begin char, set it here
     pub charBracketBegin: char,
     /// If you want to use a custom bracket end char, set it here
@@ -64,7 +62,6 @@ impl<'a> TStr<'a> {
             trimmedPrefixCnt: -1,
             trimmedSuffixCnt: -1,
             escSeqMap: HashMap::new(),
-            bMainBracketStandalone: false,
             charBracketBegin: '(',
             charBracketEnd: ')',
             charStringQuote: '"',

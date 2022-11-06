@@ -23,7 +23,6 @@ pub fn test_create() {
         trimmedPrefixCnt: 0,
         trimmedSuffixCnt: 0,
         escSeqMap: HashMap::new(),
-        bMainBracketStandalone: false,
         charBracketBegin: '(',
         charBracketEnd: ')',
         charStringQuote: '"',
