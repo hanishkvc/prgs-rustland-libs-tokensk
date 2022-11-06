@@ -49,6 +49,9 @@ pub struct TStr<'a> {
     pub charBracketEnd: char,
     /// The char used to demarcate/enclose multi word string token
     pub charStringQuote: char,
+    /// Explicit trim at end, Will be useful
+    /// when a Non space delim is used and there is spaces before the delim
+    bTrimAtEnd: bool,
 }
 
 
@@ -65,6 +68,7 @@ impl<'a> TStr<'a> {
             charBracketBegin: '(',
             charBracketEnd: ')',
             charStringQuote: '"',
+            bTrimAtEnd: true,
         }
     }
 
@@ -255,7 +259,7 @@ impl<'a> TStr<'a> {
         }
         self.drop_adjust(ctxt.nextpos);
         // trim spaces that can be at the end, when a non space dlimdef is used
-        if btrim {
+        if btrim && self.bTrimAtEnd{
             ctxt.tok = ctxt.tok.trim().to_string();
         }
         return Ok(ctxt.tok);

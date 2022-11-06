@@ -26,6 +26,7 @@ pub fn test_create() {
         charBracketBegin: '(',
         charBracketEnd: ')',
         charStringQuote: '"',
+        bTrimAtEnd: true,
     };
     let thestring = "  A string 21string ".to_string();
     let mut str2 = TStr::from_str(&thestring);
