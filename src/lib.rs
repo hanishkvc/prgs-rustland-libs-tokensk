@@ -246,6 +246,14 @@ impl<'a> TStr<'a> {
             for vcp in &vcharprocs {
                 let act = vcp.process_char(&mut ctxt);
                 if act.is_err() {
+                    let nexti = i + 1;
+                    let nexttokpos;
+                    if nexti < ctxt.vchars.len() {
+                        nexttokpos = ctxt.vchars[nexti].0;
+                    } else {
+                        nexttokpos = self.theStr.len();
+                    }
+                    self.drop_adjust(nexttokpos);
                     return Err(format!("NextTok:{}", act.unwrap_err()))
                 }
                 match act.unwrap() {
@@ -259,9 +267,9 @@ impl<'a> TStr<'a> {
             }
         }
         if !bdone {
-            ctxt.chpos += 1;
+            ctxt.nextpos = self.len();
         }
-        self.drop_adjust(ctxt.chpos);
+        self.drop_adjust(ctxt.nextpos);
         // trim spaces that can be at the end, wrt non block token,
         // when a non space dlimdef is used
         if btrim {
