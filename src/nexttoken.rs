@@ -21,7 +21,7 @@ struct Flags {
     trim: bool,
     /// Do block tokens require user specified delim at end
     /// or is block token specific end delimiter good enough
-    blocktok_dlimdef_endreqd: bool,
+    blocktok_dlimuser_endreqd: bool,
     /// Should the double quote protecting a string should be retained
     /// in the returned string wrt nexttok or not.
     pub stringquotes_retain: bool,
@@ -37,7 +37,7 @@ pub struct Ctxt {
     /// The characters of the string, to extract token from
     pub vchars: Vec<(usize, char)>,
     /// The initial delimiter specified by user
-    dlimdef: char,
+    _dlimuser: char,
     /// The currently active end delimiter
     cend: char,
     /// The phase of tokenisation
@@ -59,11 +59,11 @@ pub struct Ctxt {
 
 impl Ctxt {
 
-    pub fn new(thestr: &str, dlimdef: char, btrim: bool, esmap: HashMap<char, char>) -> Ctxt {
+    pub fn new(thestr: &str, dlim: char, btrim: bool, esmap: HashMap<char, char>) -> Ctxt {
         Ctxt {
             vchars: thestr.char_indices().collect(),
-            dlimdef: dlimdef,
-            cend: dlimdef,
+            _dlimuser: dlim,
+            cend: dlim,
             mphase: Phase::Begin,
             bescape: false,
             tok: String::new(),
@@ -73,7 +73,7 @@ impl Ctxt {
             esmap: esmap,
             f: Flags {
                 trim: btrim,
-                blocktok_dlimdef_endreqd: true,
+                blocktok_dlimuser_endreqd: true,
                 stringquotes_retain: true,
                 escapesequences_expand: true,
                 mainbracket_beginstandalone: false,
@@ -214,7 +214,7 @@ impl CharType {
                         return Ok(Action::NextChar);
                     }
                     Phase::BtwString => {
-                        if x.f.blocktok_dlimdef_endreqd {
+                        if x.f.blocktok_dlimuser_endreqd {
                             x.mphase = Phase::BtwNormal;
                         } else {
                             x.mphase = Phase::EndCleanup;
@@ -285,7 +285,7 @@ impl CharType {
                             x.tok.push(x.ch);
                             if cnt == 0 {
                                 x.nextpos = x.chpos;
-                                if x.f.blocktok_dlimdef_endreqd {
+                                if x.f.blocktok_dlimuser_endreqd {
                                     x.mphase = Phase::BtwNormal;
                                 } else {
                                     x.mphase = Phase::EndCleanup;
