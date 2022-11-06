@@ -245,7 +245,10 @@ impl<'a> TStr<'a> {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
             for vcp in &vcharprocs {
                 let act = vcp.process_char(&mut ctxt);
-                match act {
+                if act.is_err() {
+                    return Err(format!("NextTok:{}", act.unwrap_err()))
+                }
+                match act.unwrap() {
                     nexttoken::Action::NextChar => break,
                     nexttoken::Action::ContinueChain => continue,
                     nexttoken::Action::DoneBreak => bdone=true,

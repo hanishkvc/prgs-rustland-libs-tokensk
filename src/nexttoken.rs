@@ -62,12 +62,14 @@ impl Ctxt {
 }
 
 
+#[derive(Debug)]
 pub enum Action {
     NextChar,
     ContinueChain,
     DoneBreak,
 }
 
+#[derive(Debug)]
 pub enum CharType {
     EscSeq(char),
     DelimSpace(char),
@@ -79,112 +81,112 @@ pub enum CharType {
 
 impl CharType {
 
-    pub fn process_char(&self, x: &mut Ctxt) -> Action {
+    pub fn process_char(&self, x: &mut Ctxt) -> Result<Action, String> {
         match *self {
             CharType::EscSeq(chk) => {
                 if !x.bescape {
                     if x.ch != chk {
-                        return Action::ContinueChain;
+                        return Ok(Action::ContinueChain);
                     }
                     match x.mphase {
                         Phase::BtwNormal | Phase::BtwString | Phase::BtwBracket(_) => {
                             x.bescape = true;
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         _ => {
-                            return Action::ContinueChain;
+                            return Ok(Action::ContinueChain);
                         }
                     }
                 }
                 let replace = x.esmap.get(&x.ch);
                 if replace.is_none() {
-                    panic!("DBUG:NextToken:Unknown escseq [{}]", x.ch);
+                    return Err(format!("CharType:ProcessChar:Unknown escseq [{}]", x.ch));
                 }
                 x.tok.push(*replace.unwrap());
                 x.bescape = false;
-                return Action::NextChar;
+                return Ok(Action::NextChar);
             }
             CharType::DelimSpace(chk) => {
                 if x.ch != chk {
-                    return Action::ContinueChain;
+                    return Ok(Action::ContinueChain);
                 }
                 match x.mphase {
                     Phase::Begin => {
                         if x.btrim {
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                     Phase::BtwNormal => {
                         if chk == x.cend {
                             x.endpos = x.chpos;
-                            return Action::DoneBreak;
+                            return Ok(Action::DoneBreak);
                         }
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                     Phase::BtwString | Phase::BtwBracket(_) => {
                         // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
                         x.endpos = x.chpos;
                         if x.btrim {
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
-                        return Action::DoneBreak;
+                        return Ok(Action::DoneBreak);
                     }
                 }
             },
             CharType::DelimNormal(chk) => {
                 if x.ch != chk {
-                    return Action::ContinueChain;
+                    return Ok(Action::ContinueChain);
                 }
                 match x.mphase {
                     Phase::BtwString | Phase::BtwBracket(_) => {
                         // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
                         x.endpos = x.chpos;
-                        return Action::DoneBreak;
+                        return Ok(Action::DoneBreak);
                     }
                     _ => {
                         if chk == x.cend {
                             x.endpos = x.chpos;
-                            return Action::DoneBreak;
+                            return Ok(Action::DoneBreak);
                         }
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                 }
             }
             CharType::DelimString(chk) => {
                 if x.ch != chk {
-                    return Action::ContinueChain;
+                    return Ok(Action::ContinueChain);
                 }
                 match x.mphase {
                     Phase::Begin => {
                         x.mphase = Phase::BtwString;
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                     Phase::BtwString => {
                         x.mphase = Phase::EndCleanup;
                         x.endpos = x.chpos;
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                     Phase::EndCleanup => {
                         x.endpos = x.chpos;
-                        return Action::DoneBreak;
+                        return Ok(Action::DoneBreak);
                     }
                     _ => {
                         x.tok.push(x.ch);
-                        return Action::NextChar;
+                        return Ok(Action::NextChar);
                     }
                 }
             },
@@ -192,38 +194,38 @@ impl CharType {
                 if x.ch == bchk {
                     match x.mphase {
                         Phase::Begin => {
-                            panic!("DBUG:Opening bracket at begining of token??? TODO: Need to return a Err");
+                            return Err(format!("CharType:ProcessChar:Opening bracket [{}] at begining of token???", bchk));
                         }
                         Phase::BtwNormal => {
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         Phase::BtwString => {
                             x.tok.push(x.ch);
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         Phase::BtwBracket(cnt) => {
                             x.mphase = Phase::BtwBracket(cnt+1);
                             x.tok.push(x.ch);
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         Phase::EndCleanup => {
                             x.endpos = x.chpos;
-                            return Action::DoneBreak;
+                            return Ok(Action::DoneBreak);
                         }
                     }
                 } else if x.ch == echk {
                     match x.mphase {
                         Phase::Begin => {
-                            panic!("DBUG:Closing bracket at begining of token??? TODO: Need to return a Err");
+                            return Err(format!("CharType:ProcessChar:Closing bracket [{}] at begining of token???", echk));
                         }
                         Phase::BtwNormal => {
-                            panic!("DBUG:Closing bracket in the middle of normal token??? TODO: Need to return a Err");
+                            return Err(format!("CharType:ProcessChar:Closing bracket [{}] at middle of normal token???", echk));
                         }
                         Phase::BtwString => {
                             x.tok.push(x.ch);
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         Phase::BtwBracket(cnt) => {
                             let cnt = cnt - 1;
@@ -231,18 +233,18 @@ impl CharType {
                             if cnt == 0 {
                                 x.endpos = x.chpos;
                                 x.mphase = Phase::EndCleanup;
-                                return Action::NextChar;
+                                return Ok(Action::NextChar);
                             }
                             x.mphase = Phase::BtwBracket(cnt);
-                            return Action::NextChar;
+                            return Ok(Action::NextChar);
                         }
                         Phase::EndCleanup => {
                             x.endpos = x.chpos;
-                            return Action::DoneBreak;
+                            return Ok(Action::DoneBreak);
                         }
                     }
                 } else {
-                    return Action::ContinueChain;
+                    return Ok(Action::ContinueChain);
                 }
             },
             CharType::Normal => {
@@ -252,12 +254,12 @@ impl CharType {
                     }
                     Phase::EndCleanup => {
                         x.endpos = x.chpos;
-                        return Action::DoneBreak;
+                        return Ok(Action::DoneBreak);
                     }
                     _ => ()
                 }
                 x.tok.push(x.ch);
-                return Action::NextChar;
+                return Ok(Action::NextChar);
             },
         }
     }
