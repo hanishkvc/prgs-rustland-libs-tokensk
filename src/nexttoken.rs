@@ -273,9 +273,15 @@ impl CharType {
 
 }
 
-pub fn vchartypes_default() -> Vec<CharType> {
+pub fn vchartypes_default_with(delim: Option<char>) -> Vec<CharType> {
     let mut vct = Vec::new();
     vct.push(CharType::EscSeq('\\'));
+    if delim.is_some() {
+        let delim = delim.unwrap();
+        if delim !=  ' ' {
+            vct.push(CharType::DelimNormal(delim));
+        }
+    }
     vct.push(CharType::DelimSpace(' '));
     vct.push(CharType::DelimString('"'));
     vct.push(CharType::DelimBracket('(', ')'));

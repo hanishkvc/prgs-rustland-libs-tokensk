@@ -239,7 +239,7 @@ impl<'a> TStr<'a> {
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap.clone());
-        let vchartypes = nexttoken::vchartypes_default();
+        let vchartypes = nexttoken::vchartypes_default_with(Some(dlimdef));
         let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
