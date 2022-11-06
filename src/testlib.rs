@@ -75,7 +75,7 @@ pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
         if vtoks.is_err() {
             print!("ERRR:{}:FullSet:{}\n", mtag, vtoks.unwrap_err());
         } else {
-            print!("\tFullSet:{:?}\n", vtoks.unwrap());
+            print!("\tFullSet:{:#?}\n", vtoks.unwrap());
         }
     }
 }
@@ -87,7 +87,7 @@ pub fn test_nexttoken() {
         "  123 hello\\n    0x123",
         "  test( \"hello  world\", 123, what(0x123))",
         "\" lests chec\tk brackets within string what(yes, notnow,) \"",
-        "\" lests check brackets within string what(yes, notnow,) ending quote missing",
+        "\" lests chec\\tk brackets within string what(yes, notnow,) ending quote missing",
         "  test( \"hello  world\", 123, what((0x123)), extra bracket at begin",
         "  test( \"hello  world\", 123, what((0x123)))), extra bracket at end",
     ];
@@ -95,7 +95,7 @@ pub fn test_nexttoken() {
     test_nexttoken_ex(testlines, ',');
     let testlines = vec![
         "line with spaces and, commas,yes   ,commas",
-        " test(what,now with space,also)   ,bit more text "
+        " test(what,now with space,also)   ,,bit more text "
     ];
     test_nexttoken_ex(testlines.clone(), ' ');
     test_nexttoken_ex(testlines.clone(), ',');
