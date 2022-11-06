@@ -2,6 +2,7 @@
 
 cbuild:
 	cargo build
+	cargo build --release
 
 ctest:
 	cargo test -- --show-output

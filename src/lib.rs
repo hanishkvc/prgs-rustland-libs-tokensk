@@ -19,16 +19,16 @@ mod nexttoken;
 /// * using set_str, when updating/reusing a existing instance
 ///
 /// The tokenisation characteristics can be adjusted using some
-/// of the members in it.
+/// of the members in it and its helper module (nexttoken).
 ///
 /// The following token types are supported
 /// * simple tokens, each made up of Non space chars seperated by specified delimiter
 /// * block tokens, made up of tokens within them, these could include
 ///   * quoted string block with spaces/escaped-delimiters/... in between, if required
-///     * uses the same char for begin and end of the block
+///     * uses the same string quote char for begin and end of the string block
 ///   * bracketed content block
 ///     * contains a seperate begin and end bracket char wrt the block
-///     * bracked content block can contain other bracketed content blocks
+///     * bracketed content block can contain other bracketed content blocks
 ///       within them, to what ever depth required.
 ///     * The logic will try to match opening and its corresponding closing bracket,
 ///       so that a valid block of text is returned as the token.
@@ -196,19 +196,19 @@ impl<'a> TStr<'a> {
     /// User can specify the delimiter between the tokens.
     /// * space ' ' or comma ',' could be commonly useful delimiters.
     ///
-    /// However if block tokens are found, ie tokens which can contain multiple
-    /// tokens within them. The delimiter specific to that block kind is used,
-    /// instead of what is specified by user. At the same time, if a user specified
-    /// delimiter follows the block type token, it will be trimmed out. So will
-    /// any whitespace following the block type token.
+    /// The user specified delimiter will be trimmed out.
     ///
-    /// The block type tokens, which override the provided delimiter include
-    /// * quoted string is treated as a single token (double quoted by default)
+    /// However if block tokens are found, ie tokens which can contain multiple
+    /// tokens within them. The delimiter specific to that block kind is required
+    /// first, before the user specified delimiter is seen/encountered.
+    ///
+    /// The block type tokens, include
+    /// * quoted string with multiple words in it, with spaces in it, will be
+    ///   treated as a single token (double quoted by default)
     /// * bracketed content is treated as a single token ('(' and ')' by default)
     ///   * one can have brackets within brackets.
-    ///   * however the starting opening bracket should be prefixed with some
-    ///     alphanumeric text.
-    ///     This is a specific semantic, wrt how fuzzerk works currently.
+    ///   * however by default, the starting opening bracket should be prefixed
+    ///     with some alphanumeric text. (user can change this behaviour, if reqd)
     ///
     /// If any error identified while scanning for the token, a error message
     /// is returned to the caller, while parallley dropping the token with error,
@@ -218,13 +218,8 @@ impl<'a> TStr<'a> {
     /// If a escape sequence is found anywhere other than begining of the token,
     /// it will be processed/expanded, if requested.
     ///
-    /// If user requests trimming, then any spaces before the token will be
-    /// trimmed out. So also will any spaces
-    /// * following a block type token.
-    /// * at the end of a non block type token, if a non space delimiter is used.
-    ///
-    /// NOTE: If space is the delimiter, then any spaces following a token will
-    /// be trimmed out, when the subsequent/next token is requested.
+    /// If user requests trimming, then any spaces before and after the token
+    /// will be trimmed out.
     ///
     pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, String> {
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap.clone());
@@ -259,8 +254,7 @@ impl<'a> TStr<'a> {
             ctxt.nextpos = self.len();
         }
         self.drop_adjust(ctxt.nextpos);
-        // trim spaces that can be at the end, wrt non block token,
-        // when a non space dlimdef is used
+        // trim spaces that can be at the end, when a non space dlimdef is used
         if btrim {
             ctxt.tok = ctxt.tok.trim().to_string();
         }
@@ -289,7 +283,8 @@ impl<'a> TStr<'a> {
     ///
     /// User can specify a specific delimiter, which will be used to identify
     /// the tokens. However additionally if a double quoted string or bracketed
-    /// block is found, it will be treated has a token on its own.
+    /// block is found, it will be treated has a multi-token-based-block-token
+    /// on its own.
     ///
     pub fn tokens_vec(&mut self, dlimdef: char, btrim: bool, bcontinue_onerr: bool) -> Result<Vec<String>, String> {
         let mut vtoks = Vec::new();
@@ -314,9 +309,10 @@ impl<'a> TStr<'a> {
     ///
     /// Retrieve the 1st available token, and remaining string.
     ///
-    /// User can specify a specific delimiter, which will be used provided its
-    /// valid, wrt the 1st token actually found. Else what ever valid 1st token
-    /// is found will be retrieved. Look at nexttok doc for info.
+    /// User can specify the delimiter to be used. If a quoted string or
+    /// bracket based block is the 1st token, the delimiter will be checked
+    /// for beyond the 1st token (ie the delimiter could be inside the
+    /// 1st token, if it is a block token).
     ///
     pub fn split_once(&mut self, dlimdef: char) -> Result<(String, String), String> {
         let gottok = self.nexttok(dlimdef, true);
@@ -332,9 +328,8 @@ impl<'a> TStr<'a> {
     /// are more than n possible tokens in the string).
     ///
     /// User provided specific delimiter will be used, if found, as one is scanning
-    /// through the internal string slice. However if any block type tokens are found,
-    /// they will be retrieved as part of the n tokens, even, if the delimiter following
-    /// it is different from the one provided.
+    /// through the internal string slice. The retrieved tokens could also represent
+    /// block type tokens.
     ///
     pub fn splitn(&mut self, reqcnt: usize, dlimdef: char) -> Result<Vec<String>, String> {
         let mut vres = Vec::new();
