@@ -5,6 +5,8 @@
 
 use std::collections::HashMap;
 
+use crate::TokenType;
+
 
 enum Phase {
     Begin,
@@ -60,6 +62,8 @@ pub struct Ctxt {
     esmap: HashMap<char, char>,
     /// Helps control the behaviour of tokenising
     f: Flags,
+    /// Possible Token type
+    pub toktype: TokenType,
 }
 
 impl Ctxt {
@@ -83,7 +87,8 @@ impl Ctxt {
                 stringquotes_retain: true,
                 escapesequences_expand: true,
                 mainbracket_beginstandalone: false,
-            }
+            },
+            toktype: TokenType::Unknown,
         }
     }
 
@@ -232,6 +237,7 @@ impl CharType {
                 }
                 match x.mphase {
                     Phase::Begin => {
+                        x.toktype = TokenType::String;
                         x.mphase = Phase::BtwString;
                         if x.f.stringquotes_retain {
                             x.tok.push(x.ch);
@@ -271,6 +277,7 @@ impl CharType {
                             if !x.f.mainbracket_beginstandalone {
                                 return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} at begining of token???", bchk, x.ipos));
                             }
+                            x.toktype = TokenType::Bracket;
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
@@ -279,6 +286,7 @@ impl CharType {
                             if x.f.mainbracket_beginstandalone {
                                 return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} not at begining of token???", bchk, x.ipos));
                             }
+                            x.toktype = TokenType::Bracket;
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
@@ -344,6 +352,7 @@ impl CharType {
             CharType::Normal => {
                 match x.mphase {
                     Phase::Begin => {
+                        x.toktype = TokenType::Normal;
                         x.mphase = Phase::BtwNormal;
                     }
                     Phase::EndSeekDelim => {

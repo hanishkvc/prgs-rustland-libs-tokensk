@@ -11,6 +11,15 @@ pub mod util;
 mod nexttoken;
 
 
+#[derive(Debug)]
+pub enum TokenType {
+    Unknown,
+    Normal,
+    String,
+    Bracket,
+}
+
+
 #[allow(non_snake_case)]
 #[derive(Debug, Clone)]
 ///
@@ -195,7 +204,8 @@ impl<'a> TStr<'a> {
     }
 
     ///
-    /// Get the next token from the current string
+    /// Extract the next token string belonging to this TStr instance,
+    /// and inturn its token type info.
     ///
     /// User can specify the delimiter between the tokens.
     /// * space ' ' or comma ',' could be commonly useful delimiters.
@@ -226,7 +236,7 @@ impl<'a> TStr<'a> {
     /// If user requests trimming, then any spaces before and after the token
     /// will be trimmed out.
     ///
-    pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, (String, String)> {
+    pub fn nexttok_ex(&mut self, dlimdef: char, btrim: bool) -> Result<(String, TokenType), (String, String)> {
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap.clone());
         let vchartypes = nexttoken::vchartypes_default_with(self.charStringQuote, self.charBracketBegin, self.charBracketEnd, Some(dlimdef));
         let mut bdone = false;
@@ -264,7 +274,21 @@ impl<'a> TStr<'a> {
         if btrim && self.bTrimAtEnd{
             ctxt.tok = ctxt.tok.trim().to_string();
         }
-        return Ok(ctxt.tok);
+        return Ok((ctxt.tok, ctxt.toktype));
+    }
+
+    ///
+    /// Extract the next token string belonging to this TStr instance.
+    ///
+    /// NOTE: Look at the doc related to nexttok_ex for more details.
+    ///
+    pub fn nexttok(&mut self, dlimdef: char, btrim: bool) -> Result<String, (String, String)> {
+        let gotr = self.nexttok_ex(dlimdef, btrim);
+        if gotr.is_err() {
+            return Err(gotr.unwrap_err());
+        }
+        let gotr = gotr.unwrap();
+        return Ok(gotr.0);
     }
 
     ///
