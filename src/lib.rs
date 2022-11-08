@@ -66,6 +66,28 @@ impl Flags {
 }
 
 
+#[derive(Debug, Clone)]
+struct Delimiters {
+    space: char,
+    string: char,
+    bracket_begin: char,
+    bracket_end: char,
+}
+
+impl Delimiters {
+
+    pub fn default() -> Delimiters {
+        Delimiters {
+            space: ' ',
+            string: '"',
+            bracket_begin: '(',
+            bracket_end: ')',
+        }
+    }
+
+}
+
+
 #[derive(Debug)]
 pub enum TokenType {
     Unknown,
@@ -121,6 +143,8 @@ pub struct TStr<'a> {
     pub charStringQuote: char,
     /// Control the tokenisation characteristics
     pub flags: Flags,
+    /// Delimiters
+    pub delims: Delimiters,
 }
 
 
@@ -128,7 +152,7 @@ pub struct TStr<'a> {
 impl<'a> TStr<'a> {
 
     /// Create a new instance of TStr for the given string slice
-    pub fn from_str(s: &'a str, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
+    pub fn from_str(s: &'a str, delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
         TStr {
             theStr: s,
             trimmedPrefixCnt: -1,
@@ -138,6 +162,7 @@ impl<'a> TStr<'a> {
             charBracketEnd: ')',
             charStringQuote: '"',
             flags: flags,
+            delims: delims,
         }
     }
 
@@ -478,25 +503,27 @@ impl<'a> TStr<'a> {
 
 
 pub struct TStrX {
+    delims: Delimiters,
     escseqs: HashMap<char, char>,
     flags: Flags,
 }
 
 impl TStrX {
 
-    pub fn new_ex(escseqs: HashMap<char, char>, flags: Flags) -> TStrX {
+    pub fn new_ex(delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStrX {
         TStrX {
+            delims,
             escseqs,
             flags: flags,
         }
     }
 
     pub fn new() -> TStrX {
-        Self::new_ex(Self::escseqs_defaults(), Flags::default())
+        Self::new_ex(Delimiters::default(), Self::escseqs_defaults(), Flags::default())
     }
 
     pub fn from_str<'a>(&self, thestr: &'a str) -> TStr<'a> {
-        TStr::from_str(thestr, self.escseqs, self.flags.clone())
+        TStr::from_str(thestr, self.delims, self.escseqs, self.flags.clone())
     }
 
     pub fn from_str_ex<'a>(&self, thestr: &'a str, btrim: bool, bescseq: bool) -> TStr<'a> {
@@ -509,13 +536,15 @@ impl TStrX {
 
     /// Return a set of predefined / common / useful escape sequences.
     pub fn escseqs_defaults() -> HashMap<char, char> {
+        let delims = Delimiters::default();
         let escseqs = HashMap::new();
         escseqs.insert('n', '\n');
         escseqs.insert('t', '\t');
         escseqs.insert('r', '\r');
-        escseqs.insert('"', '"');
-        escseqs.insert('(', '(');
-        escseqs.insert(')', ')');
+        escseqs.insert(delims.space, delims.space);
+        escseqs.insert(delims.string, delims.string);
+        escseqs.insert(delims.bracket_begin, delims.bracket_begin);
+        escseqs.insert(delims.bracket_end, delims.bracket_end);
         escseqs
     }
 
@@ -533,9 +562,10 @@ impl TStrX {
     /// as part of the escape sequencing, so that user can escape them
     /// if required as part of string literals, etal.
     pub fn escseqs_update(&mut self) {
-        self.escseqs.insert(self.charStringQuote, self.charStringQuote);
-        self.escseqs.insert(self.charBracketBegin, self.charBracketBegin);
-        self.escseqs.insert(self.charBracketEnd, self.charBracketEnd);
+        self.escseqs.insert(self.delims.space, self.delims.space);
+        self.escseqs.insert(self.delims.string, self.delims.string);
+        self.escseqs.insert(self.delims.bracket_begin, self.delims.bracket_begin);
+        self.escseqs.insert(self.delims.bracket_end, self.delims.bracket_end);
     }
 
 }
