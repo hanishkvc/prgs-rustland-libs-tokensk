@@ -11,6 +11,7 @@ pub mod util;
 mod nexttoken;
 
 
+#[derive(Debug, Clone)]
 struct Flags {
     /// If spaces should be trimmed
     trim: bool,
@@ -116,6 +117,8 @@ pub struct TStr<'a> {
     /// Explicit trim at end, Will be useful
     /// when a Non space delim is used and there is spaces before the delim
     bTrimAtEnd: bool,
+    /// Control the tokenisation characteristics
+    pub flags: Flags,
 }
 
 
@@ -123,7 +126,7 @@ pub struct TStr<'a> {
 impl<'a> TStr<'a> {
 
     /// Create a new instance of TStr for the given string slice
-    pub fn from_str(s: &'a str) -> TStr<'a> {
+    pub fn from_str(s: &'a str, flags: Flags) -> TStr<'a> {
         TStr {
             theStr: s,
             trimmedPrefixCnt: -1,
@@ -133,14 +136,15 @@ impl<'a> TStr<'a> {
             charBracketEnd: ')',
             charStringQuote: '"',
             bTrimAtEnd: true,
+            flags: flags,
         }
     }
 
     /// Create a new instance of TStr from the given string slice, additionally
     /// * if btrim, trim the string and
     /// * if bescseq, setup the library provided default escape sequences
-    pub fn from_str_ex(s: &'a str, btrim: bool, bescseq: bool) -> TStr<'a> {
-        let mut tstr = Self::from_str(s);
+    pub fn from_str_ex(s: &'a str, btrim: bool, bescseq: bool, flags: Flags) -> TStr<'a> {
+        let mut tstr = Self::from_str(s, flags);
         if btrim {
             tstr.trim();
         }
@@ -292,7 +296,9 @@ impl<'a> TStr<'a> {
     /// will be trimmed out.
     ///
     pub fn nexttok_ex(&mut self, dlimdef: char, btrim: bool) -> Result<(String, TokenType), (String, String)> {
-        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, btrim, self.escSeqMap.clone());
+        let mut flags = self.flags;
+        flags.trim = btrim;
+        let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, self.escSeqMap.clone(), flags);
         let vchartypes = nexttoken::vchartypes_default_with(self.charStringQuote, self.charBracketBegin, self.charBracketEnd, Some(dlimdef));
         let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
@@ -488,6 +494,27 @@ impl<'a> TStr<'a> {
         }
         self.theStr = &self.theStr[1..self.len()-1];
         Ok(())
+    }
+
+}
+
+
+struct TStrX {
+    flags: Flags,
+}
+
+impl TStrX {
+
+    pub fn new(flags: Flags) -> TStrX {
+        TStrX { flags: flags }
+    }
+
+    pub fn new_tstr(&self, thestr: &str) -> TStr {
+        TStr::from_str(thestr, self.flags)
+    }
+
+    pub fn new_tstr_ex(&self, thestr: &str, btrim: bool, bescseq: bool) -> TStr {
+        TStr::from_str_ex(thestr, btrim, bescseq, self.flags)
     }
 
 }
