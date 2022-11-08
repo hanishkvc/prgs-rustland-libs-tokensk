@@ -145,11 +145,16 @@ pub fn test_splitn() {
 
 pub fn test_escseq() {
     let mut tstrx = TStrX::new();
-    let sstr = "test escseqs \\w also \t and \\t. Ok done";
+    let sstr = r"test \v escseqs \\v also \t and \\t. Ok done";
     let mut tstr = tstrx.from_str(sstr, false);
     print!("TEST:EscSeq:Default:tstr[{:#?}]\n", tstr);
-    let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
-    print!("TEST:EscSeq:Default:[{:#?}]\n", vtoks);
+    let vtoks = tstr.tokens_vec(' ', true, false);
+    if vtoks.is_err() {
+        print!("TEST:EscSeq:Default:WillFail:{}", vtoks.unwrap_err());
+    } else {
+        let vtoks = vtoks.unwrap();
+        print!("TEST:EscSeq:Default:[{:#?}]\n", vtoks);
+    }
 
     tstrx.escseqs_set('v', 'W');
     let mut tstr = tstrx.from_str(sstr, true);
