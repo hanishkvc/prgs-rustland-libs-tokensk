@@ -16,7 +16,8 @@ pub enum TokenType {
     Unknown,
     Normal,
     String,
-    Bracket,
+    BracketStandalone,
+    BracketPrefixed,
 }
 
 
@@ -42,7 +43,12 @@ pub enum TokenType {
 ///     * The logic will try to match opening and its corresponding closing bracket,
 ///       so that a valid block of text is returned as the token.
 ///       If there is a string token within a bracketed block, containing the bracket
-///       chars, they should be escaped.
+///       chars, which may not be balanced, they should be escaped.
+///     * There are two types of bracketed block tokens
+///       * BracketStandalone: those starting with begin-bracket-char at the begining of the token
+///       * BracketPrefixed: these need to contain some textual prefix before the begin-bracket-char
+///         wrt the 1st/starting bracket in the token. ie the inbetween bracketed blocks within
+///         a given bracketed block could be either Standalone or Prefixed type.
 ///
 pub struct TStr<'a> {
     theStr: &'a str,

@@ -32,8 +32,13 @@ struct Flags {
     /// Should any escape sequences found during tokenising should be
     /// processed/expanded into the special/non special char represented by them.
     pub escapesequences_expand: bool,
-    /// If a bracket based token should have some textual prefix wrt
-    /// the 1st opening bracket or not
+    /// If one needs to support bracketed-content based tokens that should have
+    /// some textual prefix wrt the 1st/main/toplevel opening bracket.
+    /// NOTE: There cant be space between the text prefix and 1st opening bracket
+    /// if space is a delimiter.
+    pub mainbracket_beginprefixed: bool,
+    /// If the 1st/main/toplevel bracketed-content based token can begin standalone,
+    /// ie if it can start with begin-bracket-char without needing any textual prefix.
     pub mainbracket_beginstandalone: bool,
 }
 
@@ -87,6 +92,7 @@ impl Ctxt {
                 stringquotes_retain: true,
                 escapesequences_expand: true,
                 mainbracket_beginstandalone: false,
+                mainbracket_beginprefixed: true,
             },
             toktype: TokenType::Unknown,
         }
@@ -277,16 +283,16 @@ impl CharType {
                             if !x.f.mainbracket_beginstandalone {
                                 return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} at begining of token???", bchk, x.ipos));
                             }
-                            x.toktype = TokenType::Bracket;
+                            x.toktype = TokenType::BracketStandalone;
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
                         Phase::BtwNormal => {
-                            if x.f.mainbracket_beginstandalone {
+                            if !x.f.mainbracket_beginprefixed {
                                 return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} not at begining of token???", bchk, x.ipos));
                             }
-                            x.toktype = TokenType::Bracket;
+                            x.toktype = TokenType::BracketPrefixed;
                             x.mphase = Phase::BtwBracket(1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
