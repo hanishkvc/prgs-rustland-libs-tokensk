@@ -112,7 +112,7 @@ pub struct TStr<'a> {
     /// The amount of space trimmed at the end of the string
     trimmedSuffixCnt: isize,
     /// Maintain the set of supported escape sequences and the underlying expanded char.
-    escSeqMap: HashMap<char, char>,
+    pub escSeqMap: HashMap<char, char>,
     /// If you want to use a custom bracket begin char, set it here
     pub charBracketBegin: char,
     /// If you want to use a custom bracket end char, set it here
@@ -128,12 +128,12 @@ pub struct TStr<'a> {
 impl<'a> TStr<'a> {
 
     /// Create a new instance of TStr for the given string slice
-    pub fn from_str(s: &'a str, flags: Flags) -> TStr<'a> {
+    pub fn from_str(s: &'a str, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
         TStr {
             theStr: s,
             trimmedPrefixCnt: -1,
             trimmedSuffixCnt: -1,
-            escSeqMap: HashMap::new(),
+            escSeqMap: escseqs,
             charBracketBegin: '(',
             charBracketEnd: ')',
             charStringQuote: '"',
@@ -160,29 +160,6 @@ impl<'a> TStr<'a> {
         self.theStr = s;
         self.trimmedPrefixCnt = -1;
         self.trimmedSuffixCnt = -1;
-    }
-
-    /// Clear any existing supported escape sequences
-    pub fn escseq_clear(&mut self) {
-        self.escSeqMap.clear();
-    }
-
-    /// Add a new supported escape sequence
-    pub fn escseq_set(&mut self, find: char, replace: char) {
-        self.escSeqMap.insert(find, replace);
-    }
-
-    /// Setup a set of predefined / common / useful escape sequences.
-    /// Sets up the currently configured StringQuote and Bracket chars,
-    /// as part of the escape sequencing, so that user can escape them
-    /// if required as part of string literals, etal.
-    pub fn escseq_defaults(&mut self) {
-        self.escSeqMap.insert('n', '\n');
-        self.escSeqMap.insert('t', '\t');
-        self.escSeqMap.insert('r', '\r');
-        self.escSeqMap.insert(self.charStringQuote, self.charStringQuote);
-        self.escSeqMap.insert(self.charBracketBegin, self.charBracketBegin);
-        self.escSeqMap.insert(self.charBracketEnd, self.charBracketEnd);
     }
 
 }
@@ -500,22 +477,65 @@ impl<'a> TStr<'a> {
 }
 
 
-struct TStrX {
+pub struct TStrX {
+    escseqs: HashMap<char, char>,
     flags: Flags,
 }
 
 impl TStrX {
 
-    pub fn new(flags: Flags) -> TStrX {
-        TStrX { flags: flags }
+    pub fn new_ex(escseqs: HashMap<char, char>, flags: Flags) -> TStrX {
+        TStrX {
+            escseqs,
+            flags: flags,
+        }
+    }
+
+    pub fn new() -> TStrX {
+        Self::new_ex(Self::escseqs_defaults(), Flags::default())
     }
 
     pub fn from_str<'a>(&self, thestr: &'a str) -> TStr<'a> {
-        TStr::from_str(thestr, self.flags.clone())
+        TStr::from_str(thestr, self.escseqs, self.flags.clone())
     }
 
     pub fn from_str_ex<'a>(&self, thestr: &'a str, btrim: bool, bescseq: bool) -> TStr<'a> {
         TStr::from_str_ex(thestr, btrim, bescseq, self.flags.clone())
+    }
+
+}
+
+impl TStrX {
+
+    /// Return a set of predefined / common / useful escape sequences.
+    pub fn escseqs_defaults() -> HashMap<char, char> {
+        let escseqs = HashMap::new();
+        escseqs.insert('n', '\n');
+        escseqs.insert('t', '\t');
+        escseqs.insert('r', '\r');
+        escseqs.insert('"', '"');
+        escseqs.insert('(', '(');
+        escseqs.insert(')', ')');
+        escseqs
+    }
+
+    /// Clear any existing supported escape sequences
+    pub fn escseqs_clear(&mut self) {
+        self.escseqs.clear();
+    }
+
+    /// Add a new supported escape sequence
+    pub fn escseqs_set(&mut self, find: char, replace: char) {
+        self.escseqs.insert(find, replace);
+    }
+
+    /// Sets up the currently configured StringQuote and Bracket chars,
+    /// as part of the escape sequencing, so that user can escape them
+    /// if required as part of string literals, etal.
+    pub fn escseqs_update(&mut self) {
+        self.escseqs.insert(self.charStringQuote, self.charStringQuote);
+        self.escseqs.insert(self.charBracketBegin, self.charBracketBegin);
+        self.escseqs.insert(self.charBracketEnd, self.charBracketEnd);
     }
 
 }
