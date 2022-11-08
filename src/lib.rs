@@ -67,7 +67,7 @@ impl Flags {
 
 
 #[derive(Debug, Clone)]
-struct Delimiters {
+pub struct Delimiters {
     pub space: char,
     /// The char used to demarcate/enclose multi word string token
     pub string: char,
@@ -530,7 +530,7 @@ impl TStrX {
     }
 
     pub fn from_str<'a>(&self, thestr: &'a str, btrim: bool) -> TStr<'a> {
-        TStr::from_str_ex(thestr, btrim, self.delims, self.escseqs, self.flags.clone())
+        TStr::from_str_ex(thestr, btrim, self.delims.clone(), self.escseqs.clone(), self.flags.clone())
     }
 
 }
@@ -540,7 +540,7 @@ impl TStrX {
     /// Return a set of predefined / common / useful escape sequences.
     pub fn escseqs_defaults() -> HashMap<char, char> {
         let delims = Delimiters::default();
-        let escseqs = HashMap::new();
+        let mut escseqs = HashMap::new();
         escseqs.insert('n', '\n');
         escseqs.insert('t', '\t');
         escseqs.insert('r', '\r');
