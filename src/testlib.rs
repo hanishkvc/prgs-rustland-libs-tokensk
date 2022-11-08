@@ -12,7 +12,7 @@
 
 use std::collections::HashMap;
 
-use crate::{TStr, Flags, TStrX};
+use crate::{TStr, Flags, TStrX, Delimiters};
 
 const MTAG: &str = "TEST:TestLib";
 
@@ -23,14 +23,12 @@ pub fn test_create() {
         trimmedPrefixCnt: 0,
         trimmedSuffixCnt: 0,
         escSeqMap: HashMap::new(),
-        charBracketBegin: '(',
-        charBracketEnd: ')',
-        charStringQuote: '"',
         flags: Flags::default(),
+        delims: Delimiters::default(),
     };
     let thestring = "  A string 21string ".to_string();
-    let mut str2 = TStr::from_str(&thestring, Flags::default());
-    let mut str3 = TStr::from_str(" A str 12string  ", Flags::default());
+    let mut str2 = TStr::from_str(&thestring, false);
+    let mut str3 = TStr::from_str(" A str 12string  ", false);
     print!("{}:Created TStrs: {:?}, {:?}, {:?}\n", mtag, str1, str2, str3);
     //print!("Str1:{}:p{},s{}\n", str1.the_str(), str1.space_prefixs(), str1.space_suffixs());
     print!("{}:Str1:p{},s{}:{}\n", mtag, str1.trimmed_prefix_cnt(), str1.trimmed_suffix_cnt(), str1.the_str());
@@ -41,8 +39,8 @@ pub fn test_create() {
 pub fn test_create_raw() {
     let mtag = format!("{}:TestCreateRaw", MTAG);
     let thestring = "  A string 21string ".to_string();
-    let mut str2 = TStr::from_str(&thestring, Flags::default());
-    let mut str3 = TStr::from_str(" A str 12string  ", Flags::default());
+    let mut str2 = TStr::from_str(&thestring, false);
+    let mut str3 = TStr::from_str(" A str 12string  ", false);
     print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.trimmed_prefix_cnt_raw(), str2.trimmed_suffix_cnt_raw());
     print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.trimmed_prefix_cnt_raw(), str3.trimmed_suffix_cnt_raw());
     str2.trim();
@@ -55,10 +53,9 @@ pub fn test_create_raw() {
 pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
     let mtag = format!("{}:TestNextToken", MTAG);
     print!("\n\n\n\n{}: **** Lets test nexttoken [{}] ****\n\n", mtag, dlimdef);
-    let mut tline = TStr::from_str("", Flags::default());
-    tline.escseq_defaults();
+    let mut tline = TStr::from_str("", true);
     for line in testlines {
-        tline.set_str(line);
+        tline.set_str(line, false);
         print!("{}:Line:[{}]\n", mtag, line);
         while tline.remaining_len() > 0 {
             let gottok = tline.nexttok(dlimdef, true);
@@ -70,7 +67,7 @@ pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
             }
         }
         // use set_str and tokens_vec to rescan into a vector
-        tline.set_str(line);
+        tline.set_str(line, false);
         let vtoks = tline.tokens_vec(dlimdef, true, true);
         if vtoks.is_err() {
             print!("ERRR:{}:FullSet:{}\n", mtag, vtoks.unwrap_err());
@@ -102,15 +99,15 @@ pub fn test_nexttoken() {
 }
 
 pub fn test_peel_bracket() {
-    let mut tstr = TStr::from_str("testbracket( 123, abc, \" msg inside bracket\")", Flags::default());
+    let mut tstr = TStr::from_str("testbracket( 123, abc, \" msg inside bracket\")", false);
     let prefix = tstr.peel_bracket('(').unwrap();
     print!("TEST:PeelBracket:prefix[{}], contents[{}]\n", prefix, tstr.the_str());
 }
 
 pub fn test_peel_string() {
-    let tstrx = TStrX::new(Flags::default());
+    let tstrx = TStrX::new();
     let delim = '"';
-    let tstr = tstrx.from_str("   \"A string with double quote at one end  ");
+    let tstr = tstrx.from_str("   \"A string with double quote at one end  ", false);
     let mut rstr = tstr.clone();
     let gotr = rstr.peel_string(delim);
     if gotr.is_err() {
@@ -118,7 +115,7 @@ pub fn test_peel_string() {
     } else {
         print!("DBUG:PeelString:[{}]:StringDelim:{}:Unexpected Success:{}\n", tstr, delim, rstr);
     }
-    let tstr = tstrx.from_str("              \"A string with double quote at one end\"  ");
+    let tstr = tstrx.from_str("              \"A string with double quote at both end\"  ", false);
     let mut rstr = tstr.clone();
     let gotr = rstr.peel_string(delim);
     if gotr.is_err() {
@@ -129,12 +126,12 @@ pub fn test_peel_string() {
 }
 
 pub fn test_first_nth_last() {
-    let tstr = TStr::from_str("0123456789 Test extracting chars ॐ", Flags::default());
+    let tstr = TStr::from_str("0123456789 Test extracting chars ॐ", false);
     print!("TEST:FirstNthLast:{},{},{}\n",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
 }
 
 pub fn test_splitn_ex(instr: &str, splitn: usize, dlimdef: char) {
-    let mut tstr = TStr::from_str(instr, Flags::default());
+    let mut tstr = TStr::from_str(instr, false);
     let vstrs = tstr.splitn(splitn, dlimdef).unwrap();
     print!("TEST:SplitN:{}:{}-[{}]:[{:?}]\n", instr, splitn, dlimdef, vstrs);
 }
@@ -147,14 +144,15 @@ pub fn test_splitn() {
 }
 
 pub fn test_escseq() {
+    let mut tstrx = TStrX::new();
     let sstr = "test escseqs \\w also \t and \\t. Ok done";
-    let mut tstr = TStr::from_str(sstr, Flags::default());
+    let mut tstr = tstrx.from_str(sstr, false);
     print!("TEST:EscSeq:None:tstr[{:#?}]\n", tstr);
     let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
     print!("TEST:EscSeq:None:[{:#?}]\n", vtoks);
 
-    let mut tstr = TStr::from_str_ex(sstr, true, true, Flags::default());
-    tstr.escseq_set('w', 'w');
+    tstrx.escseqs_set('w', 'w');
+    let mut tstr = tstrx.from_str(sstr, true);
     print!("TEST:EscSeq:Enabled:tstr[{:#?}]\n", tstr);
     let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
     print!("TEST:EscSeq:Enabled:[{:#?}]\n", vtoks);
@@ -162,13 +160,13 @@ pub fn test_escseq() {
 
 pub fn test_tstrx() {
     let sstr = "    test,   me  ";
-    let mut tstrx = TStrX::new(Flags::default());
+    let mut tstrx = TStrX::new();
     tstrx.flags.trim = false;
 
-    let mut tstr = tstrx.from_str_ex(sstr, true, true);
+    let mut tstr = tstrx.from_str(sstr, true);
     print!("TEST:TStrX:Trimmed:[{:?}]\n", tstr.tokens_vec(',', true, false).unwrap());
 
-    let mut tstr = tstrx.from_str_ex(sstr, false, true);
+    let mut tstr = tstrx.from_str(sstr, false);
     print!("TEST:TStrX:UnTrimd:[{:?}]\n", tstr.tokens_vec(',', false, false).unwrap());
 
 }
