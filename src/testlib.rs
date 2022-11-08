@@ -145,3 +145,17 @@ pub fn test_splitn() {
     test_splitn_ex("oneXXtwoXthree four five", 1, 'X');
     test_splitn_ex("one two three four five", 3, 'X');
 }
+
+pub fn test_escseq() {
+    let sstr = "test escseqs \\w also \t and \\t. Ok done";
+    let mut tstr = TStr::from_str(sstr, Flags::default());
+    print!("TEST:EscSeq:None:tstr[{:#?}]\n", tstr);
+    let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
+    print!("TEST:EscSeq:None:[{:#?}]\n", vtoks);
+
+    let mut tstr = TStr::from_str_ex(sstr, true, true, Flags::default());
+    tstr.escseq_set('w', 'w');
+    print!("TEST:EscSeq:Enabled:tstr[{:#?}]\n", tstr);
+    let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
+    print!("TEST:EscSeq:Enabled:[{:#?}]\n", vtoks);
+}

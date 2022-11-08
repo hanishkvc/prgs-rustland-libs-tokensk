@@ -554,4 +554,9 @@ mod tests {
         testlib::test_splitn();
     }
 
+    #[test]
+    fn test_escseq() {
+        testlib::test_escseq();
+    }
+
 }
