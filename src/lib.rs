@@ -152,7 +152,8 @@ pub struct TStr<'a> {
 impl<'a> TStr<'a> {
 
     /// Create a new instance of TStr for the given string slice
-    pub fn from_str(s: &'a str, delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
+    /// Using the passed delimiters, escape sequences and flags.
+    pub fn from_str_ex(s: &'a str, delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
         TStr {
             theStr: s,
             trimmedPrefixCnt: -1,
@@ -167,15 +168,14 @@ impl<'a> TStr<'a> {
     }
 
     /// Create a new instance of TStr from the given string slice, additionally
-    /// * if btrim, trim the string and
-    /// * if bescseq, setup the library provided default escape sequences
-    pub fn from_str_ex(s: &'a str, btrim: bool, bescseq: bool, flags: Flags) -> TStr<'a> {
-        let mut tstr = Self::from_str(s, flags);
+    /// * if btrim, trim the string
+    ///
+    /// Setup the delimiters, esc sequences and flags to their defaults.
+    ///
+    pub fn from_str_plus(s: &'a str, btrim: bool) -> TStr<'a> {
+        let mut tstr = Self::from_str_ex(s, Delimiters::default(), TStrX::escseqs_defaults(), Flags::default());
         if btrim {
             tstr.trim();
-        }
-        if bescseq {
-            tstr.escseq_defaults();
         }
         return tstr;
     }
@@ -503,9 +503,9 @@ impl<'a> TStr<'a> {
 
 
 pub struct TStrX {
-    delims: Delimiters,
+    pub delims: Delimiters,
     escseqs: HashMap<char, char>,
-    flags: Flags,
+    pub flags: Flags,
 }
 
 impl TStrX {
@@ -523,11 +523,11 @@ impl TStrX {
     }
 
     pub fn from_str<'a>(&self, thestr: &'a str) -> TStr<'a> {
-        TStr::from_str(thestr, self.delims, self.escseqs, self.flags.clone())
+        TStr::from_str_ex(thestr, self.delims, self.escseqs, self.flags.clone())
     }
 
-    pub fn from_str_ex<'a>(&self, thestr: &'a str, btrim: bool, bescseq: bool) -> TStr<'a> {
-        TStr::from_str_ex(thestr, btrim, bescseq, self.flags.clone())
+    pub fn from_str_plus<'a>(&self, thestr: &'a str, btrim: bool) -> TStr<'a> {
+        TStr::from_str_plus(thestr, btrim)
     }
 
 }
