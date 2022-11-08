@@ -159,3 +159,16 @@ pub fn test_escseq() {
     let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
     print!("TEST:EscSeq:Enabled:[{:#?}]\n", vtoks);
 }
+
+pub fn test_tstrx() {
+    let sstr = "    test,   me  ";
+    let mut tstrx = TStrX::new(Flags::default());
+    tstrx.flags.trim = false;
+
+    let mut tstr = tstrx.from_str_ex(sstr, true, true);
+    print!("TEST:TStrX:Trimmed:[{:?}]\n", tstr.tokens_vec(',', true, false).unwrap());
+
+    let mut tstr = tstrx.from_str_ex(sstr, false, true);
+    print!("TEST:TStrX:UnTrimd:[{:?}]\n", tstr.tokens_vec(',', false, false).unwrap());
+
+}

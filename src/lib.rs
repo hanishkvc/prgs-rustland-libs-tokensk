@@ -559,4 +559,9 @@ mod tests {
         testlib::test_escseq();
     }
 
+    #[test]
+    fn test_tstrx() {
+        testlib::test_tstrx();
+    }
+
 }
