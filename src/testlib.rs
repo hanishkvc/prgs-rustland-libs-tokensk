@@ -12,7 +12,7 @@
 
 use std::collections::HashMap;
 
-use crate::TStr;
+use crate::{TStr, Flags, TStrX};
 
 const MTAG: &str = "TEST:TestLib";
 
@@ -26,10 +26,11 @@ pub fn test_create() {
         charBracketBegin: '(',
         charBracketEnd: ')',
         charStringQuote: '"',
+        flags: Flags::default(),
     };
     let thestring = "  A string 21string ".to_string();
-    let mut str2 = TStr::from_str(&thestring);
-    let mut str3 = TStr::from_str(" A str 12string  ");
+    let mut str2 = TStr::from_str(&thestring, Flags::default());
+    let mut str3 = TStr::from_str(" A str 12string  ", Flags::default());
     print!("{}:Created TStrs: {:?}, {:?}, {:?}\n", mtag, str1, str2, str3);
     //print!("Str1:{}:p{},s{}\n", str1.the_str(), str1.space_prefixs(), str1.space_suffixs());
     print!("{}:Str1:p{},s{}:{}\n", mtag, str1.trimmed_prefix_cnt(), str1.trimmed_suffix_cnt(), str1.the_str());
@@ -40,8 +41,8 @@ pub fn test_create() {
 pub fn test_create_raw() {
     let mtag = format!("{}:TestCreateRaw", MTAG);
     let thestring = "  A string 21string ".to_string();
-    let mut str2 = TStr::from_str(&thestring);
-    let mut str3 = TStr::from_str(" A str 12string  ");
+    let mut str2 = TStr::from_str(&thestring, Flags::default());
+    let mut str3 = TStr::from_str(" A str 12string  ", Flags::default());
     print!("{}:Str2:{}:p{},s{}\n", mtag, str2.the_str(), str2.trimmed_prefix_cnt_raw(), str2.trimmed_suffix_cnt_raw());
     print!("{}:Str3:{}:p{},s{}\n", mtag, str3.the_str(), str3.trimmed_prefix_cnt_raw(), str3.trimmed_suffix_cnt_raw());
     str2.trim();
@@ -54,7 +55,7 @@ pub fn test_create_raw() {
 pub fn test_nexttoken_ex(testlines: Vec<&str>, dlimdef: char) {
     let mtag = format!("{}:TestNextToken", MTAG);
     print!("\n\n\n\n{}: **** Lets test nexttoken [{}] ****\n\n", mtag, dlimdef);
-    let mut tline = TStr::from_str("");
+    let mut tline = TStr::from_str("", Flags::default());
     tline.escseq_defaults();
     for line in testlines {
         tline.set_str(line);
@@ -101,14 +102,15 @@ pub fn test_nexttoken() {
 }
 
 pub fn test_peel_bracket() {
-    let mut tstr = TStr::from_str("testbracket( 123, abc, \" msg inside bracket\")");
+    let mut tstr = TStr::from_str("testbracket( 123, abc, \" msg inside bracket\")", Flags::default());
     let prefix = tstr.peel_bracket('(').unwrap();
     print!("TEST:PeelBracket:prefix[{}], contents[{}]\n", prefix, tstr.the_str());
 }
 
 pub fn test_peel_string() {
+    let tstrx = TStrX::new(Flags::default());
     let delim = '"';
-    let tstr = TStr::from_str("   \"A string with double quote at one end  ");
+    let tstr = tstrx.from_str("   \"A string with double quote at one end  ");
     let mut rstr = tstr.clone();
     let gotr = rstr.peel_string(delim);
     if gotr.is_err() {
@@ -116,7 +118,7 @@ pub fn test_peel_string() {
     } else {
         print!("DBUG:PeelString:[{}]:StringDelim:{}:Unexpected Success:{}\n", tstr, delim, rstr);
     }
-    let tstr = TStr::from_str("              \"A string with double quote at one end\"  ");
+    let tstr = tstrx.from_str("              \"A string with double quote at one end\"  ");
     let mut rstr = tstr.clone();
     let gotr = rstr.peel_string(delim);
     if gotr.is_err() {
@@ -127,12 +129,12 @@ pub fn test_peel_string() {
 }
 
 pub fn test_first_nth_last() {
-    let tstr = TStr::from_str("0123456789 Test extracting chars ॐ");
+    let tstr = TStr::from_str("0123456789 Test extracting chars ॐ", Flags::default());
     print!("TEST:FirstNthLast:{},{},{}\n",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
 }
 
 pub fn test_splitn_ex(instr: &str, splitn: usize, dlimdef: char) {
-    let mut tstr = TStr::from_str(instr);
+    let mut tstr = TStr::from_str(instr, Flags::default());
     let vstrs = tstr.splitn(splitn, dlimdef).unwrap();
     print!("TEST:SplitN:{}:{}-[{}]:[{:?}]\n", instr, splitn, dlimdef, vstrs);
 }

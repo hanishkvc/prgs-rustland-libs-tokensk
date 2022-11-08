@@ -12,7 +12,7 @@ mod nexttoken;
 
 
 #[derive(Debug, Clone)]
-struct Flags {
+pub struct Flags {
     /// If spaces should be trimmed
     trim: bool,
     /// Should any escape sequences found during tokenising should be
@@ -297,7 +297,7 @@ impl<'a> TStr<'a> {
     /// will be trimmed out.
     ///
     pub fn nexttok_ex(&mut self, dlimdef: char, btrim: bool) -> Result<(String, TokenType), (String, String)> {
-        let mut flags = self.flags;
+        let mut flags = self.flags.clone();
         flags.trim = btrim;
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, self.escSeqMap.clone(), flags);
         let vchartypes = nexttoken::vchartypes_default_with(self.charStringQuote, self.charBracketBegin, self.charBracketEnd, Some(dlimdef));
@@ -333,7 +333,7 @@ impl<'a> TStr<'a> {
         }
         self.drop_adjust(ctxt.nextpos);
         // trim spaces that can be at the end, when a non space dlimdef is used
-        if flags.trim && flags.trim_atend{
+        if btrim && self.flags.trim_atend {
             ctxt.tok = ctxt.tok.trim().to_string();
         }
         return Ok((ctxt.tok, ctxt.toktype));
@@ -510,12 +510,12 @@ impl TStrX {
         TStrX { flags: flags }
     }
 
-    pub fn new_tstr(&self, thestr: &str) -> TStr {
-        TStr::from_str(thestr, self.flags)
+    pub fn from_str<'a>(&self, thestr: &'a str) -> TStr<'a> {
+        TStr::from_str(thestr, self.flags.clone())
     }
 
-    pub fn new_tstr_ex(&self, thestr: &str, btrim: bool, bescseq: bool) -> TStr {
-        TStr::from_str_ex(thestr, btrim, bescseq, self.flags)
+    pub fn from_str_ex<'a>(&self, thestr: &'a str, btrim: bool, bescseq: bool) -> TStr<'a> {
+        TStr::from_str_ex(thestr, btrim, bescseq, self.flags.clone())
     }
 
 }
