@@ -32,6 +32,9 @@ struct Flags {
     /// NOTE: There cant be space between the text prefix and 1st opening bracket
     /// if space is a delimiter.
     pub mainbracket_beginprefixed: bool,
+    /// Explicit trim at end, This will be useful
+    /// when a Non space delim is used and there is spaces before the delim
+    trim_atend: bool,
 }
 
 impl Flags {
@@ -44,6 +47,7 @@ impl Flags {
             stringquotes_retain: retainquotes,
             mainbracket_beginstandalone: bracketstandalone,
             mainbracket_beginprefixed: bracketprefixed,
+            trim_atend: true,
         }
     }
 
@@ -55,6 +59,7 @@ impl Flags {
             stringquotes_retain: true,
             mainbracket_beginprefixed: true,
             mainbracket_beginstandalone: true,
+            trim_atend: true,
         }
     }
 
@@ -114,9 +119,6 @@ pub struct TStr<'a> {
     pub charBracketEnd: char,
     /// The char used to demarcate/enclose multi word string token
     pub charStringQuote: char,
-    /// Explicit trim at end, Will be useful
-    /// when a Non space delim is used and there is spaces before the delim
-    bTrimAtEnd: bool,
     /// Control the tokenisation characteristics
     pub flags: Flags,
 }
@@ -135,7 +137,6 @@ impl<'a> TStr<'a> {
             charBracketBegin: '(',
             charBracketEnd: ')',
             charStringQuote: '"',
-            bTrimAtEnd: true,
             flags: flags,
         }
     }
@@ -332,7 +333,7 @@ impl<'a> TStr<'a> {
         }
         self.drop_adjust(ctxt.nextpos);
         // trim spaces that can be at the end, when a non space dlimdef is used
-        if btrim && self.bTrimAtEnd{
+        if flags.trim && flags.trim_atend{
             ctxt.tok = ctxt.tok.trim().to_string();
         }
         return Ok((ctxt.tok, ctxt.toktype));
