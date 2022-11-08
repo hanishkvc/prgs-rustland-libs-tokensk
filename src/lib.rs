@@ -11,6 +11,55 @@ pub mod util;
 mod nexttoken;
 
 
+struct Flags {
+    /// If spaces should be trimmed
+    trim: bool,
+    /// Should any escape sequences found during tokenising should be
+    /// processed/expanded into the special/non special char represented by them.
+    pub escapesequences_expand: bool,
+    /// Do block tokens require user specified delim at end
+    /// or is block token specific end delimiter good enough
+    blocktok_dlimuser_endreqd: bool,
+    /// Should the double quote protecting a string should be retained
+    /// in the returned string wrt nexttok or not.
+    pub stringquotes_retain: bool,
+    /// If the 1st/main/toplevel bracketed-content based token can begin standalone,
+    /// ie if it can start with begin-bracket-char without needing any textual prefix.
+    pub mainbracket_beginstandalone: bool,
+    /// If one needs to support bracketed-content based tokens that should have
+    /// some textual prefix wrt the 1st/main/toplevel opening bracket.
+    /// NOTE: There cant be space between the text prefix and 1st opening bracket
+    /// if space is a delimiter.
+    pub mainbracket_beginprefixed: bool,
+}
+
+impl Flags {
+
+    pub fn new(trim: bool, escapesequences: bool, blocktokdelimited: bool, retainquotes: bool, bracketstandalone: bool, bracketprefixed: bool) -> Flags {
+        Flags {
+            trim: trim,
+            escapesequences_expand: escapesequences,
+            blocktok_dlimuser_endreqd: blocktokdelimited,
+            stringquotes_retain: retainquotes,
+            mainbracket_beginstandalone: bracketstandalone,
+            mainbracket_beginprefixed: bracketprefixed,
+        }
+    }
+
+    pub fn default() -> Flags {
+        Flags {
+            trim: true,
+            escapesequences_expand: true,
+            blocktok_dlimuser_endreqd: true,
+            stringquotes_retain: true,
+            mainbracket_beginprefixed: true,
+            mainbracket_beginstandalone: true,
+        }
+    }
+
+}
+
+
 #[derive(Debug)]
 pub enum TokenType {
     Unknown,
