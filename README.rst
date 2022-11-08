@@ -60,6 +60,10 @@ It provides methods for trimming the string, getting 1 token at a time or all to
 getting 1st or Nth or last char, split once or n-times wrt a given delimiter, peel a bracket
 wrt its prefix name and members, ...
 
+If one wants to share the same tokenisation characteristics across multiple TStr instances,
+then instead of creating TStr directly, one can first create a TStrX instance, and setup the
+required charactersistics. Then create TStr instances from that configured TStrX instance
+
 
 Usage
 #######
@@ -71,7 +75,7 @@ Look at the documentation in the source, as well as the sample test app and test
    #
    # Get tokens one at a time
    #
-   tstr = TStr::from_str(" a test string");
+   tstr = TStr::from_str(" a test string", true);
    print!("INFO:Looking at [{}]", tstr);
    while tstr.remaining_len() > 0 {
         let tok = tstr.nexttok(' ', true);
@@ -80,25 +84,34 @@ Look at the documentation in the source, as well as the sample test app and test
    #
    # Get tokens in one shot
    #
-   tstr = TStr::from_str(" a test string");
+   tstr = TStr::from_str(" a test string", true);
    print!("\t1Short:[{}]", tstr.tokens_vec(' ', true, true).unwrap());
    #
    # Handle escape sequences
    #
-   tstr = TStr::from_str(" a test\tstring with\\t escape sequences");
-   tstr.escseq_defaults();
-   tstr = TStr::from_str_ex(" a test\tstring with\\t escape sequences", true, true);
+   tstr = TStr::from_str(r" a test\tstring with\\t escape sequences", true);
+   tstr = TStr::from_str_ex(r" a test\tstring with\\t escape sequences", true, Delimiters::default(), TStrX::escseqs_default(), Flags::default());
    #
    # Peel bracketted content
    #
-   tstr = TStr::from_str("testme( a test, 123, msg in a bracket)");
+   tstr = TStr::from_str("testme( a test, 123, msg in a bracket)", true);
    sprefix = tstr.peel_bracket('(');
    scontents = tstr.the_str();
    vContentTokens = tstr.tokens_vec(',', true, true).unwrap();
    #
    # Get first, nth and last chars
    #
-   let tstr = TStr::from_str("0123456789 Test extracting chars ॐ");
+   let tstr = TStr::from_str("0123456789 Test extracting chars ॐ", false);
    print!("TEST:FirstNthLast:{},{},{}",tstr.char_first().unwrap(), tstr.char_nth(8).unwrap(), tstr.char_last().unwrap());
-
+   #
+   # Use TStrX to share tokenisation characteristics wrt multiple TStr's if reqd
+   #
+   let tstrbuilder = TStrX::new()
+   tstrbuilder.flags.mainbracket_beginstandalonge=false
+   let tstr = tstrbuilder.from_str("    a    test string", true);
+   print!("{}", tstr.nexttok(' ', true));
+   print!("{}", tstr.nexttok(' ', true));
+   let tstr = tstrbuilder.from_str("    a    test string", false);
+   print!("{}", tstr.nexttok(' ', false));
+   print!("{}", tstr.nexttok(' ', false));
 

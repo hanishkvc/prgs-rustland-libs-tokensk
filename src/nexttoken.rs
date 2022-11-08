@@ -1,5 +1,5 @@
 //!
-//! NextToken
+//! NextToken - Allows tokenisation using char types and tokenisation phase based flow.
 //! HanishKVC, 2022
 //!
 

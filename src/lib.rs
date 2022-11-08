@@ -12,6 +12,11 @@ mod nexttoken;
 
 
 #[derive(Debug, Clone)]
+///
+/// Control some of the characteristics of tokenisation, by updating
+/// the below flags, as needed wrt the TStr instance that will be used
+/// for tokenisation.
+///
 pub struct Flags {
     /// If spaces should be trimmed
     trim: bool,
@@ -39,6 +44,7 @@ pub struct Flags {
 
 impl Flags {
 
+    /// create a flags instance, with changed characteristics.
     pub fn new(trim: bool, escapesequences: bool, blocktokdelimited: bool, retainquotes: bool, bracketstandalone: bool, bracketprefixed: bool) -> Flags {
         Flags {
             trim: trim,
@@ -51,6 +57,7 @@ impl Flags {
         }
     }
 
+    /// The default flags settings
     pub fn default() -> Flags {
         Flags {
             trim: true,
@@ -67,6 +74,8 @@ impl Flags {
 
 
 #[derive(Debug, Clone)]
+/// The structure used to maintain the list of delimiters that will be
+/// used by the tokenisation logic.
 pub struct Delimiters {
     pub space: char,
     /// The char used to demarcate/enclose multi word string token
@@ -92,6 +101,7 @@ impl Delimiters {
 
 
 #[derive(Debug)]
+/// Used to specify the type of token identified and returned by nexttok_ex
 pub enum TokenType {
     Unknown,
     Normal,
@@ -174,7 +184,7 @@ impl<'a> TStr<'a> {
     ///
     /// If btrim is set, then trim the string
     pub fn from_str(s: &'a str, btrim: bool) -> TStr<'a> {
-        Self::from_str_ex(s, btrim, Delimiters::default(), TStrX::escseqs_defaults(), Flags::default())
+        Self::from_str_ex(s, btrim, Delimiters::default(), TStrX::escseqs_default(), Flags::default())
     }
 
     /// Allow an existing TStr to be used wrt a new string/line
@@ -509,6 +519,9 @@ impl<'a> TStr<'a> {
 }
 
 
+/// If one wants to customise the tokenisation characteristics and share it
+/// across multiple instances of TStr, then one could use TStrX to simplify
+/// the same.
 pub struct TStrX {
     pub delims: Delimiters,
     escseqs: HashMap<char, char>,
@@ -517,6 +530,8 @@ pub struct TStrX {
 
 impl TStrX {
 
+    /// Create an instance of TStrX, with the characteristics (delims, escseqs, flags)
+    /// specified by the user.
     pub fn new_ex(delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStrX {
         TStrX {
             delims,
@@ -525,10 +540,13 @@ impl TStrX {
         }
     }
 
+    /// Create an instance of TStrX, with the characteristics (delims, escseqs, flags)
+    /// specified by the library by default.
     pub fn new() -> TStrX {
-        Self::new_ex(Delimiters::default(), Self::escseqs_defaults(), Flags::default())
+        Self::new_ex(Delimiters::default(), Self::escseqs_default(), Flags::default())
     }
 
+    /// Create an instance of TStr, which inherits/copies the characteristics set wrt this TStrX.
     pub fn from_str<'a>(&self, thestr: &'a str, btrim: bool) -> TStr<'a> {
         TStr::from_str_ex(thestr, btrim, self.delims.clone(), self.escseqs.clone(), self.flags.clone())
     }
@@ -538,7 +556,7 @@ impl TStrX {
 impl TStrX {
 
     /// Return a set of predefined / common / useful escape sequences.
-    pub fn escseqs_defaults() -> HashMap<char, char> {
+    pub fn escseqs_default() -> HashMap<char, char> {
         let delims = Delimiters::default();
         let mut escseqs = HashMap::new();
         escseqs.insert('n', '\n');
@@ -562,8 +580,8 @@ impl TStrX {
         self.escseqs.insert(find, replace);
     }
 
-    /// Sets up the currently configured StringQuote and Bracket chars,
-    /// as part of the escape sequencing, so that user can escape them
+    /// Sets up the currently configured Space, StringQuote and Bracket chars,
+    /// as part of the escape sequencing. This allows the user to escape them
     /// if required as part of string literals, etal.
     pub fn escseqs_update(&mut self) {
         self.escseqs.insert(self.delims.space, self.delims.space);
