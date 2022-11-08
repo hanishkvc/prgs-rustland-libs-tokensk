@@ -147,15 +147,15 @@ pub fn test_escseq() {
     let mut tstrx = TStrX::new();
     let sstr = "test escseqs \\w also \t and \\t. Ok done";
     let mut tstr = tstrx.from_str(sstr, false);
-    print!("TEST:EscSeq:None:tstr[{:#?}]\n", tstr);
+    print!("TEST:EscSeq:Default:tstr[{:#?}]\n", tstr);
     let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
-    print!("TEST:EscSeq:None:[{:#?}]\n", vtoks);
+    print!("TEST:EscSeq:Default:[{:#?}]\n", vtoks);
 
-    tstrx.escseqs_set('w', 'w');
+    tstrx.escseqs_set('v', 'W');
     let mut tstr = tstrx.from_str(sstr, true);
-    print!("TEST:EscSeq:Enabled:tstr[{:#?}]\n", tstr);
+    print!("TEST:EscSeq:Updated:tstr[{:#?}]\n", tstr);
     let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
-    print!("TEST:EscSeq:Enabled:[{:#?}]\n", vtoks);
+    print!("TEST:EscSeq:Updated:[{:#?}]\n", vtoks);
 }
 
 pub fn test_tstrx() {
