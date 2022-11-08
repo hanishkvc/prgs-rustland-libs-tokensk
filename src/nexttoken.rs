@@ -357,16 +357,16 @@ impl CharType {
 /// Create the default vector of chartypes, which will be used by nexttok
 /// to process the chars to identify the next token.
 ///
-pub fn vchartypes_default_with(delimstring: char, bracketbegin: char, bracketend: char, delim: Option<char>) -> Vec<CharType> {
+pub fn vchartypes_with(delimspace: char, delimstring: char, bracketbegin: char, bracketend: char, delim: Option<char>) -> Vec<CharType> {
     let mut vct = Vec::new();
     vct.push(CharType::EscSeq('\\'));
     if delim.is_some() {
         let delim = delim.unwrap();
-        if delim !=  ' ' {
+        if delim !=  delimspace {
             vct.push(CharType::DelimNormal(delim));
         }
     }
-    vct.push(CharType::DelimSpace(' '));
+    vct.push(CharType::DelimSpace(delimspace));
     vct.push(CharType::DelimString(delimstring));
     vct.push(CharType::DelimBracket(bracketbegin, bracketend));
     vct.push(CharType::Normal);

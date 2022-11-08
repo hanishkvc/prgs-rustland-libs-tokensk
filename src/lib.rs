@@ -68,10 +68,13 @@ impl Flags {
 
 #[derive(Debug, Clone)]
 struct Delimiters {
-    space: char,
-    string: char,
-    bracket_begin: char,
-    bracket_end: char,
+    pub space: char,
+    /// The char used to demarcate/enclose multi word string token
+    pub string: char,
+    /// If you want to use a custom bracket begin char, set it here
+    pub bracket_begin: char,
+    /// If you want to use a custom bracket end char, set it here
+    pub bracket_end: char,
 }
 
 impl Delimiters {
@@ -135,15 +138,9 @@ pub struct TStr<'a> {
     trimmedSuffixCnt: isize,
     /// Maintain the set of supported escape sequences and the underlying expanded char.
     pub escSeqMap: HashMap<char, char>,
-    /// If you want to use a custom bracket begin char, set it here
-    pub charBracketBegin: char,
-    /// If you want to use a custom bracket end char, set it here
-    pub charBracketEnd: char,
-    /// The char used to demarcate/enclose multi word string token
-    pub charStringQuote: char,
     /// Control the tokenisation characteristics
     pub flags: Flags,
-    /// Delimiters
+    /// Delimiters used to demarcate the tokens
     pub delims: Delimiters,
 }
 
@@ -151,40 +148,45 @@ pub struct TStr<'a> {
 /// Creation and setup related methods
 impl<'a> TStr<'a> {
 
-    /// Create a new instance of TStr for the given string slice
-    /// Using the passed delimiters, escape sequences and flags.
-    pub fn from_str_ex(s: &'a str, delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
-        TStr {
+    ///
+    /// Create a new instance of TStr for the given string slice,
+    /// using the passed delimiters, escape sequences and flags.
+    ///
+    /// If btrim is set, then trim the string
+    ///
+    pub fn from_str_ex(s: &'a str, btrim: bool, delims: Delimiters, escseqs: HashMap<char, char>, flags: Flags) -> TStr<'a> {
+        let mut tstr = TStr {
             theStr: s,
             trimmedPrefixCnt: -1,
             trimmedSuffixCnt: -1,
             escSeqMap: escseqs,
-            charBracketBegin: '(',
-            charBracketEnd: ')',
-            charStringQuote: '"',
             flags: flags,
             delims: delims,
-        }
-    }
-
-    /// Create a new instance of TStr from the given string slice, additionally
-    /// * if btrim, trim the string
-    ///
-    /// Setup the delimiters, esc sequences and flags to their defaults.
-    ///
-    pub fn from_str_plus(s: &'a str, btrim: bool) -> TStr<'a> {
-        let mut tstr = Self::from_str_ex(s, Delimiters::default(), TStrX::escseqs_defaults(), Flags::default());
+        };
         if btrim {
             tstr.trim();
         }
-        return tstr;
+        tstr
+    }
+
+    /// Create a new instance of TStr from the given string slice.
+    /// Setup the delimiters, esc sequences and flags to their defaults.
+    ///
+    /// If btrim is set, then trim the string
+    pub fn from_str(s: &'a str, btrim: bool) -> TStr<'a> {
+        Self::from_str_ex(s, btrim, Delimiters::default(), TStrX::escseqs_defaults(), Flags::default())
     }
 
     /// Allow an existing TStr to be used wrt a new string/line
-    pub fn set_str(&mut self, s: &'a str) {
+    ///
+    /// If btrim is set, then trim the updated TStr
+    pub fn set_str(&mut self, s: &'a str, btrim: bool) {
         self.theStr = s;
         self.trimmedPrefixCnt = -1;
         self.trimmedSuffixCnt = -1;
+        if btrim {
+            self.trim();
+        }
     }
 
 }
@@ -302,7 +304,12 @@ impl<'a> TStr<'a> {
         let mut flags = self.flags.clone();
         flags.trim = btrim;
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, self.escSeqMap.clone(), flags);
-        let vchartypes = nexttoken::vchartypes_default_with(self.charStringQuote, self.charBracketBegin, self.charBracketEnd, Some(dlimdef));
+        let vchartypes = nexttoken::vchartypes_with(
+            self.delims.space,
+            self.delims.string,
+            self.delims.bracket_begin,
+            self.delims.bracket_end,
+            Some(dlimdef));
         let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
@@ -522,12 +529,8 @@ impl TStrX {
         Self::new_ex(Delimiters::default(), Self::escseqs_defaults(), Flags::default())
     }
 
-    pub fn from_str<'a>(&self, thestr: &'a str) -> TStr<'a> {
-        TStr::from_str_ex(thestr, self.delims, self.escseqs, self.flags.clone())
-    }
-
-    pub fn from_str_plus<'a>(&self, thestr: &'a str, btrim: bool) -> TStr<'a> {
-        TStr::from_str_plus(thestr, btrim)
+    pub fn from_str<'a>(&self, thestr: &'a str, btrim: bool) -> TStr<'a> {
+        TStr::from_str_ex(thestr, btrim, self.delims, self.escseqs, self.flags.clone())
     }
 
 }
