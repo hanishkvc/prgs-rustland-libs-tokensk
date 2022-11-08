@@ -99,6 +99,7 @@ impl CharType {
     /// at which point it points to the begining of the next token roughly.
     ///
     pub fn process_char(&self, x: &mut Ctxt) -> Result<Action, String> {
+        //print!("DBUG:NextToken:ProcessChar:{}:{}\n", x.ipos, x.ch);
         match *self {
             CharType::EscSeq(chk) => {
                 if !x.bescape {

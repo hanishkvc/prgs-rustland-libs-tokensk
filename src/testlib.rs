@@ -148,19 +148,23 @@ pub fn test_escseq() {
     let sstr = r"test \v escseqs \\v also \t and \\t. Ok done";
     let mut tstr = tstrx.from_str(sstr, false);
     print!("TEST:EscSeq:Default:tstr[{:#?}]\n", tstr);
-    let vtoks = tstr.tokens_vec(' ', true, false);
+    let vtoks = tstr.tokens_vec(';', true, false);
     if vtoks.is_err() {
-        print!("TEST:EscSeq:Default:WillFail:{}", vtoks.unwrap_err());
+        print!("TEST:EscSeq:Default:WillFail:{}\n", vtoks.unwrap_err());
     } else {
         let vtoks = vtoks.unwrap();
         print!("TEST:EscSeq:Default:[{:#?}]\n", vtoks);
     }
 
+    let estr = r"test W escseqs \\v also \n and \\t. Ok done";
+    print!("TEST:EscSeq:In[{}], Out[{}]\n", sstr, estr);
     tstrx.escseqs_set('v', 'W');
+    tstrx.escseqs_set('t', '\n');
     let mut tstr = tstrx.from_str(sstr, true);
     print!("TEST:EscSeq:Updated:tstr[{:#?}]\n", tstr);
-    let vtoks = tstr.tokens_vec(' ', true, false).unwrap();
-    print!("TEST:EscSeq:Updated:[{:#?}]\n", vtoks);
+    let vtoks = tstr.tokens_vec(';', true, false).unwrap();
+    print!("TEST:EscSeq:Updated:Debug:[{:#?}]\n", vtoks);
+    print!("TEST:EscSeq:Updated:String:[{}]\n", vtoks[0]);
 }
 
 pub fn test_tstrx() {

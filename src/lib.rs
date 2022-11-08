@@ -544,6 +544,7 @@ impl TStrX {
         escseqs.insert('n', '\n');
         escseqs.insert('t', '\t');
         escseqs.insert('r', '\r');
+        escseqs.insert('\\', '\\');
         escseqs.insert(delims.space, delims.space);
         escseqs.insert(delims.string, delims.string);
         escseqs.insert(delims.bracket_begin, delims.bracket_begin);
