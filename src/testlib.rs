@@ -168,14 +168,19 @@ pub fn test_escseq() {
 }
 
 pub fn test_tstrx() {
-    let sstr = "    test,   me  ";
+    let sstr1 = "    test,   me  ";
+    let sstr2 = "    test,   [me, hello world], [[save nature], [save earth]]  ";
     let mut tstrx = TStrX::new();
     tstrx.flags.trim = false;
+    tstrx.flags.mainbracket_beginprefixed = false;
+    tstrx.escseqs_set('v', 'W');
+    tstrx.delims.bracket_begin = '[';
+    tstrx.delims.bracket_end = ']';
 
-    let mut tstr = tstrx.from_str(sstr, true);
+    let mut tstr = tstrx.from_str(sstr1, true);
     print!("TEST:TStrX:Trimmed:[{:?}]\n", tstr.tokens_vec(',', true, false).unwrap());
 
-    let mut tstr = tstrx.from_str(sstr, false);
+    let mut tstr = tstrx.from_str(sstr2, false);
     print!("TEST:TStrX:UnTrimd:[{:?}]\n", tstr.tokens_vec(',', false, false).unwrap());
 
 }

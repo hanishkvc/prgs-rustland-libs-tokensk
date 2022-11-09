@@ -3,13 +3,21 @@
 ##########
 
 Author: hanishkvc
-Version: v20221104IST1511
+Version: v20221109IST1023
+License: LGPL
 
 Overview
 ##########
 
 A simple tokeniser library written in rust, which allows one to extract the individual tokens
-from a given string.
+from a given line of text. It understands about strings and multi-depth-bracketed contents, so
+that they can be extracted as single token, if required. It also supports expanding / processing
+of escape sequences. The delimiters between individual tokens as well as wrt strings and
+brackets can be configured, as required.
+
+
+Token types
+=============
 
 A token is any of the following
 
@@ -39,7 +47,10 @@ A token is any of the following
     literal within.
 
 
-The logic is encapsulated into a new custom type called TStr.
+Library usage
+===============
+
+The logic is encapsulated into a new custom type called TStr and a helper called TStrX.
 
 One can control tokeniser behaviour by configuring certain properties/members of TStr instance,
 and or deciding which helper method to call wrt extracting contents of the string.
@@ -60,15 +71,22 @@ It provides methods for trimming the string, getting 1 token at a time or all to
 getting 1st or Nth or last char, split once or n-times wrt a given delimiter, peel a bracket
 wrt its prefix name and members, ...
 
-If one wants to share the same tokenisation characteristics across multiple TStr instances,
-then instead of creating TStr directly, one can first create a TStrX instance, and setup the
-required charactersistics. Then create TStr instances from that configured TStrX instance
+If one wants to share the same tokenisation characteristics across multiple TStr instances at
+the same time, then instead of creating multiple TStr instances directly and inturn setting up
+the characteristics of each of them individually, one can first create a TStrX instance, and
+setup the required charactersistics. Then create TStr instances from that configured TStrX
+instance.
+
+However if one needs same tokenisation characteristics to be used across multiple strings/lines,
+one after the other, then one can create one instance of TStr, setup the required characteristics
+and inturn use its set_str method, to switch it to operate with the different strings/lines.
 
 
-Usage
-#######
+Sample Usage
+##############
 
-Look at the documentation in the source, as well as the sample test app and testlib for more info.
+Look at the sample testlib code for some more simple examples of using this library. Also look at
+the documentation/comments in the source, for more info wrt the entities and their members/methods.
 
 .. code-block:: rust
 
@@ -106,12 +124,16 @@ Look at the documentation in the source, as well as the sample test app and test
    #
    # Use TStrX to share tokenisation characteristics wrt multiple TStr's if reqd
    #
-   let tstrbuilder = TStrX::new()
-   tstrbuilder.flags.mainbracket_beginstandalonge=false
-   let tstr = tstrbuilder.from_str("    a    test string", true);
-   print!("{}", tstr.nexttok(' ', true));
-   print!("{}", tstr.nexttok(' ', true));
-   let tstr = tstrbuilder.from_str("    a    test string", false);
-   print!("{}", tstr.nexttok(' ', false));
-   print!("{}", tstr.nexttok(' ', false));
+   let tstrbuilder = TStrX::new();
+   tstrbuilder.flags.mainbracket_beginstandalonge=false;
+   tstrbuilder.delims.bracket_begin = '[';
+   tstrbuilder.delims.bracket_begin = ']';
+   tstrbuilder.escseqs_set('v', 'W');
+
+   let tstr1 = tstrbuilder.from_str(r"    a  \v  test[ string]", true);
+   let tstr2 = tstrbuilder.from_str(r"    a  \v  test[ string]", false);
+   let tstr3 = tstrbuilder.from_str(r"    another a, \v  test[, string]", false);
+   print!("{}", tstr1.nexttok(' ', true));
+   print!("{}", tstr2.nexttok(' ', false));
+   print!("{}", tstr3.nexttok(',', true));
 
