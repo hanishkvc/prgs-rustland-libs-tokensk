@@ -224,6 +224,17 @@ impl CharType {
                         }
                         return Ok(Action::NextChar);
                     }
+                    Phase::BtwNormal => {
+                        if x.f.string_canbe_asubpart {
+                            x.toktype = TokenType::String; // Maybe add a StringPlus type
+                            x.mphase = Phase::BtwString;
+                        }
+                        // In this case dont bother about StringQuotesRetain flag,
+                        // bcas its definitely in the middle of some other token
+                        // So retain the quote.
+                        x.tok.push(x.ch);
+                        return Ok(Action::NextChar);
+                    }
                     Phase::BtwString => {
                         if x.f.blocktok_dlimuser_endreqd {
                             x.mphase = Phase::EndSeekDelim;

@@ -59,6 +59,8 @@ These includes
 
 * whether enclosing/boundry/marker quotes are retained or not wrt string tokens
 
+* whether a string can be some where in the middle of a normal token.
+
 * whether escape sequences if any found by TStr are expanded/processed or not.
 
 * whether bracketed blocks additionally include a textual prefix wrt their 1st opening bracket.
