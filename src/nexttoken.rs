@@ -154,7 +154,7 @@ impl CharType {
                         return Ok(Action::NextChar);
                     }
                     Phase::BtwString | Phase::BtwBracket(_) => {
-                        // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
+                        // NOTE: For now not worrying about delim space within string or bracket token needing to be escaped.
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
@@ -184,7 +184,7 @@ impl CharType {
                 }
                 match x.mphase {
                     Phase::BtwString | Phase::BtwBracket(_) => {
-                        // NOTE: For now not worrying about delim within string or bracket token needing to be escaped.
+                        // NOTE: For now not worrying about delim normal within string or bracket token needing to be escaped.
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
@@ -227,6 +227,8 @@ impl CharType {
                     Phase::BtwString => {
                         if x.f.blocktok_dlimuser_endreqd {
                             x.mphase = Phase::EndSeekDelim;
+                        } else if x.f.string_canbe_asubpart {
+                            x.mphase = Phase::BtwNormal;
                         } else {
                             x.mphase = Phase::EndCleanup;
                         }

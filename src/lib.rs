@@ -25,10 +25,12 @@ pub struct Flags {
     pub escapesequences_expand: bool,
     /// Do block tokens require user specified delim at end
     /// or is block token specific end delimiter good enough
-    blocktok_dlimuser_endreqd: bool,
+    pub blocktok_dlimuser_endreqd: bool,
     /// Should the double quote protecting a string should be retained
     /// in the returned string wrt nexttok or not.
     pub stringquotes_retain: bool,
+    /// string on its own or just a sub part
+    pub string_canbe_asubpart: bool,
     /// If the 1st/main/toplevel bracketed-content based token can begin standalone,
     /// ie if it can start with begin-bracket-char without needing any textual prefix.
     pub mainbracket_beginstandalone: bool,
@@ -45,12 +47,13 @@ pub struct Flags {
 impl Flags {
 
     /// create a flags instance, with changed characteristics.
-    pub fn new(trim: bool, escapesequences: bool, blocktokdelimited: bool, retainquotes: bool, bracketstandalone: bool, bracketprefixed: bool) -> Flags {
+    pub fn new(trim: bool, escapesequences: bool, blocktokdelimited: bool, retainquotes: bool, stringasubpart: bool, bracketstandalone: bool, bracketprefixed: bool) -> Flags {
         Flags {
             trim: trim,
             escapesequences_expand: escapesequences,
             blocktok_dlimuser_endreqd: blocktokdelimited,
             stringquotes_retain: retainquotes,
+            string_canbe_asubpart: stringasubpart,
             mainbracket_beginstandalone: bracketstandalone,
             mainbracket_beginprefixed: bracketprefixed,
             trim_atend: true,
@@ -64,6 +67,7 @@ impl Flags {
             escapesequences_expand: true,
             blocktok_dlimuser_endreqd: true,
             stringquotes_retain: true,
+            string_canbe_asubpart: false,
             mainbracket_beginprefixed: true,
             mainbracket_beginstandalone: true,
             trim_atend: true,
