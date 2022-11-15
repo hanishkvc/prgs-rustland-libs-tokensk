@@ -640,4 +640,9 @@ mod tests {
         testlib::test_tstrx();
     }
 
+    #[test]
+    fn test_string_subparts() {
+        testlib::test_string_subparts();
+    }
+
 }

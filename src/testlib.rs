@@ -184,3 +184,13 @@ pub fn test_tstrx() {
     print!("TEST:TStrX:UnTrimd:[{:?}]\n", tstr.tokens_vec(',', false, false).unwrap());
 
 }
+
+pub fn test_string_subparts() {
+    let sstr1 = r#""skey1":"svalue2","skey2":"svalue2", what else, "nothing new" another, "again again", the end"#;
+    let mut tstrx = TStrX::new();
+    tstrx.flags.string_canbe_asubpart = true;
+    tstrx.flags.blocktok_dlimuser_endreqd = false;
+    let mut tstr = tstrx.from_str(sstr1, true);
+    let toks = tstr.tokens_vec(',', true, false).unwrap();
+    println!("TEST:StringSubParts:>>{}<<:>>{:?}<<", sstr1, toks);
+}
