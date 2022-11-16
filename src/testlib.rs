@@ -174,8 +174,7 @@ pub fn test_tstrx() {
     tstrx.flags.trim = false;
     tstrx.flags.mainbracket_beginprefixed = false;
     tstrx.escseqs_set('v', 'W');
-    tstrx.delims.bracket_begin = '[';
-    tstrx.delims.bracket_end = ']';
+    tstrx.delims.bracket = ('[',']');
 
     let mut tstr = tstrx.from_str(sstr1, true);
     print!("TEST:TStrX:Trimmed:[{:?}]\n", tstr.tokens_vec(',', true, false).unwrap());

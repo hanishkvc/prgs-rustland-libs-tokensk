@@ -84,10 +84,8 @@ pub struct Delimiters {
     pub space: char,
     /// The char used to demarcate/enclose multi word string token
     pub string: char,
-    /// If you want to use a custom bracket begin char, set it here
-    pub bracket_begin: char,
-    /// If you want to use a custom bracket end char, set it here
-    pub bracket_end: char,
+    /// The bracket start and end chars
+    pub bracket: (char, char),
 }
 
 impl Delimiters {
@@ -96,8 +94,7 @@ impl Delimiters {
         Delimiters {
             space: ' ',
             string: '"',
-            bracket_begin: '(',
-            bracket_end: ')',
+            bracket: ('(',')'),
         }
     }
 
@@ -321,8 +318,7 @@ impl<'a> TStr<'a> {
         let vchartypes = nexttoken::vchartypes_with(
             self.delims.space,
             self.delims.string,
-            self.delims.bracket_begin,
-            self.delims.bracket_end,
+            self.delims.bracket,
             Some(dlimdef));
         let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
@@ -569,8 +565,8 @@ impl TStrX {
         escseqs.insert('\\', '\\');
         escseqs.insert(delims.space, delims.space);
         escseqs.insert(delims.string, delims.string);
-        escseqs.insert(delims.bracket_begin, delims.bracket_begin);
-        escseqs.insert(delims.bracket_end, delims.bracket_end);
+        escseqs.insert(delims.bracket.0, delims.bracket.0);
+        escseqs.insert(delims.bracket.1, delims.bracket.1);
         escseqs
     }
 
@@ -590,8 +586,8 @@ impl TStrX {
     pub fn escseqs_update(&mut self) {
         self.escseqs.insert(self.delims.space, self.delims.space);
         self.escseqs.insert(self.delims.string, self.delims.string);
-        self.escseqs.insert(self.delims.bracket_begin, self.delims.bracket_begin);
-        self.escseqs.insert(self.delims.bracket_end, self.delims.bracket_end);
+        self.escseqs.insert(self.delims.bracket.0, self.delims.bracket.0);
+        self.escseqs.insert(self.delims.bracket.1, self.delims.bracket.1);
     }
 
 }

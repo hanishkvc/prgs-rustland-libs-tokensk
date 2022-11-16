@@ -83,11 +83,31 @@ pub enum Action {
 
 #[derive(Debug)]
 pub enum CharType {
+    /// This char will be used to allow special chars like newline, etc
+    /// to be represented within/as-part-of a token.
+    /// It also allows a delimiter to be part of some token as a normal
+    /// char, without its delimiting characteristics.
+    /// One needs to prefix the special char or the delim char with this
+    /// char, to allow this.
     EscSeq(char),
+    /// The char specified here will be trimmed, if present at begin or end
+    /// of a token, if trimming is requested.
+    /// Additionally it can also act as a delimiter to terminate/demarcate
+    /// a token, if cend in Ctxt set to this char.
     DelimSpace(char),
+    /// A delimiter of tokens in general
     DelimNormal(char),
+    /// Identify a block of chars including spaces (or other normal demarcaters),
+    /// which will be treated has a single token, which is demarcated by this
+    /// same char at both ends.
     DelimString(char),
+    /// Identify a block of chars including spaces (or other normal demarcaters),
+    /// which will be treated has a single token, which is demarcated by this
+    /// set of chars at either end.
+    /// It allows one such block to contain additional such blocks within it,
+    /// and so on for what ever depth required.
     DelimBracket(char, char),
+    /// Represents all the other chars, which inturn will be treated as normal chars.
     Normal,
 }
 
@@ -155,6 +175,8 @@ impl CharType {
                     }
                     Phase::BtwString | Phase::BtwBracket(_) => {
                         // NOTE: For now not worrying about delim space within string or bracket token needing to be escaped.
+                        // However from a overall flow perspective, the delim needs to be escaped, to ensure proper functioning
+                        // of the overall logic.
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
@@ -185,6 +207,8 @@ impl CharType {
                 match x.mphase {
                     Phase::BtwString | Phase::BtwBracket(_) => {
                         // NOTE: For now not worrying about delim normal within string or bracket token needing to be escaped.
+                        // However from a overall flow perspective, the delim needs to be escaped, to ensure proper functioning
+                        // of the overall logic.
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
@@ -371,7 +395,7 @@ impl CharType {
 /// Create the default vector of chartypes, which will be used by nexttok
 /// to process the chars to identify the next token.
 ///
-pub fn vchartypes_with(delimspace: char, delimstring: char, bracketbegin: char, bracketend: char, delim: Option<char>) -> Vec<CharType> {
+pub fn vchartypes_with(delimspace: char, delimstring: char, delimbracket: (char,char), delim: Option<char>) -> Vec<CharType> {
     let mut vct = Vec::new();
     vct.push(CharType::EscSeq('\\'));
     if delim.is_some() {
@@ -382,7 +406,7 @@ pub fn vchartypes_with(delimspace: char, delimstring: char, bracketbegin: char, 
     }
     vct.push(CharType::DelimSpace(delimspace));
     vct.push(CharType::DelimString(delimstring));
-    vct.push(CharType::DelimBracket(bracketbegin, bracketend));
+    vct.push(CharType::DelimBracket(delimbracket.0, delimbracket.1));
     vct.push(CharType::Normal);
     return vct;
 }
