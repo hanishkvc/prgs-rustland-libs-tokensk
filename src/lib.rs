@@ -89,6 +89,8 @@ pub struct Delimiters {
     pub string: char,
     /// The bracket start and end chars
     pub bracket: (char, char),
+    /// A optional additional bracket type
+    pub obracket: Option<(char,char)>,
 }
 
 impl Delimiters {
@@ -99,6 +101,7 @@ impl Delimiters {
             space: ' ',
             string: '"',
             bracket: ('(',')'),
+            obracket: None,
         }
     }
 
@@ -640,6 +643,11 @@ mod tests {
     #[test]
     fn test_string_subparts() {
         testlib::test_string_subparts();
+    }
+
+    #[test]
+    fn test_multibrackets() {
+        testlib::test_multibrackets();
     }
 
 }

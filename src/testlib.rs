@@ -193,3 +193,14 @@ pub fn test_string_subparts() {
     let toks = tstr.tokens_vec(',', true, false).unwrap();
     println!("TEST:StringSubParts:>>{}<<:>>{:?}<<", sstr1, toks);
 }
+
+pub fn test_multibrackets() {
+    let sstr1 = r#""skey1":"svalue2","skey2":"svalue2", what else, ["nothing new" another], {"again again", the end}, "skey3":[{what now}, {again}]  , no more"#;
+    let mut tstr = TStr::from_str(sstr1, true);
+    tstr.delims.bracket = ('{','}');
+    tstr.delims.obracket = Some(('[',']'));
+    tstr.flags.string_canbe_asubpart = true;
+    tstr.flags.blocktok_dlimuser_endreqd = false;
+    let toks = tstr.tokens_vec(',', true, false).unwrap();
+    println!("TEST:MultiBrackets:>>{}<<:>>{:#?}<<", sstr1, toks);
+}

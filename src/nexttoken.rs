@@ -115,6 +115,11 @@ pub enum CharType {
 impl CharType {
 
     ///
+    /// If Multiple DelimBracket sets are provided, then the 1st begining bracket type
+    /// matched (ie outermost bracket type) will be used for bracket block delimiting /
+    /// demarcating wrt that token, including any included sub bracket blocks
+    /// (ie brackets within brackets) within that block token.
+    ///
     /// DevNote: nextpos contains the position of last char to consume wrt current tok,
     /// till the logic executes a Action::DoneBreak from within Phase::EndCleanup,
     /// at which point it points to the begining of the next token roughly.
@@ -411,7 +416,7 @@ impl VCharTypes {
     ///
     /// normaldelim: the normal delimiter, if seperate from the space delimiter
     ///
-    pub fn from_chars(delimescseq: char, delimspace: char, delimstring: char, delimbracket: (char,char), normaldelim: Option<char>) -> VCharTypes {
+    pub fn from_chars(delimescseq: char, delimspace: char, delimstring: char, delimbracket: (char,char), normaldelim: Option<char>, odelimbracket: Option<(char,char)>) -> VCharTypes {
         let mut vct = Vec::new();
         vct.push(CharType::EscSeq(delimescseq));
         if normaldelim.is_some() {
@@ -423,6 +428,10 @@ impl VCharTypes {
         vct.push(CharType::DelimSpace(delimspace));
         vct.push(CharType::DelimString(delimstring));
         vct.push(CharType::DelimBracket(delimbracket.0, delimbracket.1));
+        if odelimbracket.is_some() {
+            let obracket = odelimbracket.unwrap();
+            vct.push(CharType::DelimBracket(obracket.0, obracket.1));
+        }
         vct.push(CharType::Normal);
         VCharTypes {
             vct: vct
@@ -430,7 +439,7 @@ impl VCharTypes {
     }
 
     pub fn from_delimiters(delims: &Delimiters, normaldelim: Option<char>) -> VCharTypes {
-        return Self::from_chars(delims.escseq, delims.space, delims.string, delims.bracket, normaldelim);
+        return Self::from_chars(delims.escseq, delims.space, delims.string, delims.bracket, normaldelim, delims.obracket);
     }
 
 }
