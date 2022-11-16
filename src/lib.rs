@@ -315,7 +315,7 @@ impl<'a> TStr<'a> {
         let mut flags = self.flags.clone();
         flags.trim = btrim;
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, self.escSeqMap.clone(), flags);
-        let vchartypes = nexttoken::vchartypes_with(
+        let vchartypes = nexttoken::VCharTypes::from_chars(
             self.delims.space,
             self.delims.string,
             self.delims.bracket,
@@ -324,7 +324,7 @@ impl<'a> TStr<'a> {
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
             ctxt.ipos = i;
-            for vct in &vchartypes {
+            for vct in &vchartypes.vct {
                 let act = vct.process_char(&mut ctxt);
                 if act.is_err() {
                     let nexti = i + 1;

@@ -391,22 +391,33 @@ impl CharType {
 }
 
 
-///
-/// Create the default vector of chartypes, which will be used by nexttok
-/// to process the chars to identify the next token.
-///
-pub fn vchartypes_with(delimspace: char, delimstring: char, delimbracket: (char,char), delim: Option<char>) -> Vec<CharType> {
-    let mut vct = Vec::new();
-    vct.push(CharType::EscSeq('\\'));
-    if delim.is_some() {
-        let delim = delim.unwrap();
-        if delim !=  delimspace {
-            vct.push(CharType::DelimNormal(delim));
+/// The vector of chartypes, which will be used by nexttok, to process
+/// the chars in the string it is given, to identify the next token
+pub struct VCharTypes {
+    pub vct: Vec<CharType>,
+}
+
+impl VCharTypes {
+
+    ///
+    /// Create the vector of chartypes, from the given chars
+    ///
+    pub fn from_chars(delimspace: char, delimstring: char, delimbracket: (char,char), delim: Option<char>) -> VCharTypes {
+        let mut vct = Vec::new();
+        vct.push(CharType::EscSeq('\\'));
+        if delim.is_some() {
+            let delim = delim.unwrap();
+            if delim !=  delimspace {
+                vct.push(CharType::DelimNormal(delim));
+            }
+        }
+        vct.push(CharType::DelimSpace(delimspace));
+        vct.push(CharType::DelimString(delimstring));
+        vct.push(CharType::DelimBracket(delimbracket.0, delimbracket.1));
+        vct.push(CharType::Normal);
+        VCharTypes {
+            vct: vct
         }
     }
-    vct.push(CharType::DelimSpace(delimspace));
-    vct.push(CharType::DelimString(delimstring));
-    vct.push(CharType::DelimBracket(delimbracket.0, delimbracket.1));
-    vct.push(CharType::Normal);
-    return vct;
+
 }
