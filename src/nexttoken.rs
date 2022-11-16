@@ -12,8 +12,9 @@ enum Phase {
     Begin,
     BtwNormal,
     BtwString,
-    /// Maintain current open brackets count
-    BtwBracket(usize),
+    /// Maintain current open brackets count, as well as the open bracket char
+    /// Allow more than one bracket type to be supported.
+    BtwBracket(char, usize),
     /// Seek delimiter, by dropping any spaces
     EndSeekDelim,
     /// Peek ahead to see and handle any trimmable spaces
@@ -127,7 +128,7 @@ impl CharType {
                         return Ok(Action::ContinueChain);
                     }
                     match x.mphase {
-                        Phase::BtwNormal | Phase::BtwString | Phase::BtwBracket(_) => {
+                        Phase::BtwNormal | Phase::BtwString | Phase::BtwBracket(_,_) => {
                             if x.f.escapesequences_expand {
                                 x.bescape = true;
                             } else {
@@ -173,7 +174,7 @@ impl CharType {
                         x.tok.push(x.ch);
                         return Ok(Action::NextChar);
                     }
-                    Phase::BtwString | Phase::BtwBracket(_) => {
+                    Phase::BtwString | Phase::BtwBracket(_,_) => {
                         // NOTE: For now not worrying about delim space within string or bracket token needing to be escaped.
                         // However from a overall flow perspective, the delim needs to be escaped, to ensure proper functioning
                         // of the overall logic.
@@ -205,7 +206,7 @@ impl CharType {
                     return Ok(Action::ContinueChain);
                 }
                 match x.mphase {
-                    Phase::BtwString | Phase::BtwBracket(_) => {
+                    Phase::BtwString | Phase::BtwBracket(_,_) => {
                         // NOTE: For now not worrying about delim normal within string or bracket token needing to be escaped.
                         // However from a overall flow perspective, the delim needs to be escaped, to ensure proper functioning
                         // of the overall logic.
@@ -295,7 +296,7 @@ impl CharType {
                                 return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} at begining of token???", bchk, x.ipos));
                             }
                             x.toktype = TokenType::BracketStandalone;
-                            x.mphase = Phase::BtwBracket(1);
+                            x.mphase = Phase::BtwBracket(bchk, 1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
@@ -304,7 +305,7 @@ impl CharType {
                                 return Err(format!("CharType:ProcessChar:Opening bracket [{}] @ {} not at begining of token???", bchk, x.ipos));
                             }
                             x.toktype = TokenType::BracketPrefixed;
-                            x.mphase = Phase::BtwBracket(1);
+                            x.mphase = Phase::BtwBracket(bchk, 1);
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
@@ -312,8 +313,10 @@ impl CharType {
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
-                        Phase::BtwBracket(cnt) => {
-                            x.mphase = Phase::BtwBracket(cnt+1);
+                        Phase::BtwBracket(curb, cnt) => {
+                            if curb == bchk {
+                                x.mphase = Phase::BtwBracket(curb, cnt+1);
+                            }
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
@@ -338,7 +341,11 @@ impl CharType {
                             x.tok.push(x.ch);
                             return Ok(Action::NextChar);
                         }
-                        Phase::BtwBracket(cnt) => {
+                        Phase::BtwBracket(curb, cnt) => {
+                            if curb != bchk {
+                                x.tok.push(x.ch);
+                                return Ok(Action::NextChar);
+                            }
                             let cnt = cnt - 1;
                             x.tok.push(x.ch);
                             if cnt == 0 {
@@ -350,7 +357,7 @@ impl CharType {
                                 }
                                 return Ok(Action::NextChar);
                             }
-                            x.mphase = Phase::BtwBracket(cnt);
+                            x.mphase = Phase::BtwBracket(curb, cnt);
                             return Ok(Action::NextChar);
                         }
                         Phase::EndSeekDelim => {
