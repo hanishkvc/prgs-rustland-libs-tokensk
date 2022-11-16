@@ -81,6 +81,9 @@ impl Flags {
 /// The structure used to maintain the list of delimiters that will be
 /// used by the tokenisation logic.
 pub struct Delimiters {
+    /// The char used to identify a escape sequece
+    pub escseq: char,
+    /// The space char
     pub space: char,
     /// The char used to demarcate/enclose multi word string token
     pub string: char,
@@ -92,6 +95,7 @@ impl Delimiters {
 
     pub fn default() -> Delimiters {
         Delimiters {
+            escseq: '\\',
             space: ' ',
             string: '"',
             bracket: ('(',')'),
@@ -315,11 +319,7 @@ impl<'a> TStr<'a> {
         let mut flags = self.flags.clone();
         flags.trim = btrim;
         let mut ctxt = nexttoken::Ctxt::new(self.theStr, dlimdef, self.escSeqMap.clone(), flags);
-        let vchartypes = nexttoken::VCharTypes::from_chars(
-            self.delims.space,
-            self.delims.string,
-            self.delims.bracket,
-            Some(dlimdef));
+        let vchartypes = nexttoken::VCharTypes::from_delimiters(&self.delims, Some(dlimdef));
         let mut bdone = false;
         for i in 0..ctxt.vchars.len() {
             (ctxt.chpos, ctxt.ch) = ctxt.vchars[i];
@@ -562,7 +562,7 @@ impl TStrX {
         escseqs.insert('n', '\n');
         escseqs.insert('t', '\t');
         escseqs.insert('r', '\r');
-        escseqs.insert('\\', '\\');
+        escseqs.insert(delims.escseq, delims.escseq);
         escseqs.insert(delims.space, delims.space);
         escseqs.insert(delims.string, delims.string);
         escseqs.insert(delims.bracket.0, delims.bracket.0);
@@ -584,6 +584,7 @@ impl TStrX {
     /// as part of the escape sequencing. This allows the user to escape them
     /// if required as part of string literals, etal.
     pub fn escseqs_update(&mut self) {
+        self.escseqs.insert(self.delims.escseq, self.delims.escseq);
         self.escseqs.insert(self.delims.space, self.delims.space);
         self.escseqs.insert(self.delims.string, self.delims.string);
         self.escseqs.insert(self.delims.bracket.0, self.delims.bracket.0);

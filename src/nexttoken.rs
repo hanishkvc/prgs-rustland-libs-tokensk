@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use crate::{TokenType, Flags};
+use crate::{TokenType, Flags, Delimiters};
 
 
 enum Phase {
@@ -402,11 +402,13 @@ impl VCharTypes {
     ///
     /// Create the vector of chartypes, from the given chars
     ///
-    pub fn from_chars(delimspace: char, delimstring: char, delimbracket: (char,char), delim: Option<char>) -> VCharTypes {
+    /// normaldelim: the normal delimiter, if seperate from the space delimiter
+    ///
+    pub fn from_chars(delimescseq: char, delimspace: char, delimstring: char, delimbracket: (char,char), normaldelim: Option<char>) -> VCharTypes {
         let mut vct = Vec::new();
-        vct.push(CharType::EscSeq('\\'));
-        if delim.is_some() {
-            let delim = delim.unwrap();
+        vct.push(CharType::EscSeq(delimescseq));
+        if normaldelim.is_some() {
+            let delim = normaldelim.unwrap();
             if delim !=  delimspace {
                 vct.push(CharType::DelimNormal(delim));
             }
@@ -418,6 +420,10 @@ impl VCharTypes {
         VCharTypes {
             vct: vct
         }
+    }
+
+    pub fn from_delimiters(delims: &Delimiters, normaldelim: Option<char>) -> VCharTypes {
+        return Self::from_chars(delims.escseq, delims.space, delims.string, delims.bracket, normaldelim);
     }
 
 }
